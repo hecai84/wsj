@@ -1,8 +1,0 @@
-"STARTUP.obj",
-"IIC.obj",
-"main.obj",
-"Tools.obj",
-"power.obj",
-"ADC.obj" 
-TO "wsj" 
-RAMSIZE(256) 
