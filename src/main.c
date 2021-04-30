@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-02 23:16:06
- * @LastEditTime: 2021-04-30 22:55:28
+ * @LastEditTime: 2021-05-01 01:03:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\main.c
@@ -12,6 +12,7 @@
 #include "Tools.h"
 #include "OB38R08A1.h"
 #include "oled.h"
+#include "Timer.h"
 
 
 #define BT_POW P0_0
@@ -20,6 +21,7 @@
 
 u8 test;
 u8 num;
+u32 time1,time2=0;
 void testRead(u8 add)
 {
     Debug(add);
@@ -30,14 +32,27 @@ void testRead(u8 add)
         Debug(0xE0);
 }
 
-void main()
-{
-    //ADC_Init();
-    //ADC();
 
-    initPow();
+void init()
+{
+    //定时器初始化
+    TIMER0_initialize();    
+    TR0  = 1;
+    TR1  = 1;
+    EA   = 1;
+
+    //屏幕初始化
     Initial();
     clear();
+
+    //8812初始化
+    
+
+}
+
+void main()
+{
+    initPow();
     Delay_ms(100);  
    
     WriteCmd(0x01,0x31);
@@ -63,12 +78,19 @@ void main()
     //Delay_ms(1000);  
     //clear();
     num=0;
+    DisplayBat(4);
     while(1)
     { 
-        DisplayBat(4);
-        DisplayChar_b(num);
-        DisplayChar_s(num++);
-        Delay_ms(100);
+        time1=GetSysTick();
+        Debug(time1>>24);
+        Debug((time1>>16)&0xff);
+        Debug((time1>>8)&0xff);
+        Debug(time1&0xff);
+        
+        //DisplayChar_b(num);
+        //DisplayChar_s(num++);
+        
+        Delay_ms(5000);
         // testRead(0x00); 
         // Delay_ms(100); 
         // testRead(0x01); 

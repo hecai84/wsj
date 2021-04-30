@@ -1,12 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2021-04-16 23:27:08
- * @LastEditTime: 2021-04-18 23:01:56
+ * @LastEditTime: 2021-05-01 00:15:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\Tools.c
  */
 #include "Tools.h"
+#include "Timer.h"
+
+
 void uartDelay(void) //波特率1200
 {
     u8 i, j;
@@ -44,6 +47,18 @@ void Delay_ms(u16 n)
         }
     }
 }
+
+// void Delay_ms(u16 n)
+// {
+//     u32 start,cur=0;
+//     start=GetSysTick();
+//     while(1)
+//     {
+//         cur=GetSysTick();
+//         if(cur-start > n)
+//             break;
+//     }
+// }
 
 
 void Debug(u8 dat)
