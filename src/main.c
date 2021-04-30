@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-02 23:16:06
- * @LastEditTime: 2021-04-30 00:45:34
+ * @LastEditTime: 2021-04-30 22:55:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\main.c
@@ -19,7 +19,7 @@
 #define BT_ADD P3_0
 
 u8 test;
-u8 add;
+u8 num;
 void testRead(u8 add)
 {
     Debug(add);
@@ -37,7 +37,7 @@ void main()
 
     initPow();
     Initial();
-    Display_test();
+    clear();
     Delay_ms(100);  
    
     WriteCmd(0x01,0x31);
@@ -61,38 +61,43 @@ void main()
 
     //WriteCmd(0x0a,0x11);
     //Delay_ms(1000);  
-
+    //clear();
+    num=0;
     while(1)
     { 
-        testRead(0x00); 
-        Delay_ms(100); 
-        testRead(0x01); 
-        Delay_ms(100); 
-        testRead(0x02); 
-        Delay_ms(100); 
-        testRead(0x03);
-        Delay_ms(100); 
-        testRead(0x04);
-        Delay_ms(100); 
-        testRead(0x05);
-        Delay_ms(100); 
-        testRead(0x06);
-        Delay_ms(100); 
-        testRead(0x07);
-        Delay_ms(100);  
-        testRead(0x08);
-        Delay_ms(100); 
-        testRead(0x09);
-        Delay_ms(100);  
-        testRead(0x0A);
-        Delay_ms(100); 
-        testRead(0x0B);
-        Delay_ms(100); 
-        testRead(0x0C);
-        Delay_ms(100); 
-        testRead(0x0F);
-        Delay_ms(100); 
-        testRead(0x10);
-        Delay_ms(10000);    
+        DisplayBat(4);
+        DisplayChar_b(num);
+        DisplayChar_s(num++);
+        Delay_ms(100);
+        // testRead(0x00); 
+        // Delay_ms(100); 
+        // testRead(0x01); 
+        // Delay_ms(100); 
+        // testRead(0x02); 
+        // Delay_ms(100); 
+        // testRead(0x03);
+        // Delay_ms(100); 
+        // testRead(0x04);
+        // Delay_ms(100); 
+        // testRead(0x05);
+        // Delay_ms(100); 
+        // testRead(0x06);
+        // Delay_ms(100); 
+        // testRead(0x07);
+        // Delay_ms(100);  
+        // testRead(0x08);
+        // Delay_ms(100); 
+        // testRead(0x09);
+        // Delay_ms(100);  
+        // testRead(0x0A);
+        // Delay_ms(100); 
+        // testRead(0x0B);
+        // Delay_ms(100); 
+        // testRead(0x0C);
+        // Delay_ms(100); 
+        // testRead(0x0F);
+        // Delay_ms(100); 
+        // testRead(0x10);
+        
     }
 }
