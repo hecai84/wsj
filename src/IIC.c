@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-02 00:46:37
- * @LastEditTime: 2021-04-29 22:34:39
+ * @LastEditTime: 2021-05-01 01:15:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\IIC.c
@@ -14,7 +14,7 @@
 #define ADDR_W 0xE8
 #define ADDR_R 0xE9
 
-void init();  
+void initI2C();
 void somenop();  
 void start();  
 void stop();  
@@ -25,7 +25,7 @@ unsigned char read_byte();
   
 
 //端口初始化  
-void init()  
+void initI2C()  
 {  
     sda = 1;  
     scl = 1;  

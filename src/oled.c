@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-04-30 22:54:24
+ * @LastEditTime: 2021-05-01 20:31:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\oled.c
  */
+#include "oled.h"
 #define SDA P0_5
 #define SCL P0_4
-#include "oled.h"
 
 
 #define uint unsigned int
@@ -23,6 +23,8 @@ bit log = 0;
 #define Start_column 0x00
 #define Start_page 0x00
 
+u8 curDisplay;
+
 void Write_number(uchar code *n, uchar k, uchar station_dot);
 void Set_Page_Address(unsigned char add);
 void Set_Column_Address(unsigned char add);
@@ -35,6 +37,7 @@ static void Stop(void);
 static void Start(void);
 void Send_ACK(void);
 unsigned char ReceiveByte(void);
+
 
 static void somenop()  
 {;;}  
@@ -325,9 +328,38 @@ void Initial(void)
     SentByte(0x80);
 
     SentByte(0xaf); //--turn on oled panel
-
+    curDisplay=1;
     Stop();
 }
+
+void DisplayOff()
+{
+    
+    Start();
+    SentByte(Write_Address);
+    SentByte(0x8d); //--set Charge Pump enable/disable
+    SentByte(0x80);
+    SentByte(0x10); //--set(0x10) disable
+    SentByte(0x80);
+    SentByte(0xae);
+    Stop();
+    curDisplay=0;
+    Delay_ms(100);
+}
+void DisplayOn()
+{
+    Start();
+    SentByte(Write_Address);
+    SentByte(0x8d); //--set Charge Pump enable/disable
+    SentByte(0x80);
+    SentByte(0x14); //--set(0x10) disable
+    SentByte(0x80);
+    SentByte(0xaf);
+    Stop();
+    curDisplay=1;
+    Delay_ms(100);
+}
+
 
 void clear(void)
 {
@@ -463,6 +495,8 @@ void DisplayChar_b(u8 num)
 void DisplayChar_s(u16 num)
 {
     u8 i, j,n,offset = 0;
+    if(num<10)
+        num=0;
     for (i = 0; i < 2; i++)
     {
         Set_Page_Address(i+3);
