@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:57
- * @LastEditTime: 2021-05-02 01:43:51
+ * @LastEditTime: 2021-05-02 08:58:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.h
@@ -17,4 +17,7 @@ u8 GetBat();
 void SetVolt(u8 v);
 u8 ReadCmd(u8 addr,u8 * dat);
 u8 WriteCmd(u8 addr,u8 dat);
+void VoltMin();
+void VoltAdd();
+void stopPow(void);
 #endif

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-02 01:43:30
+ * @LastEditTime: 2021-05-02 16:39:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -160,7 +160,7 @@ u8 GetIBus()
         if(ReadCmd(0x12,&value2))
         {
             A=value1;
-            A=(A*4+value2+1)/2;
+            A=(A*4+(value2&0x3)+1)/2;
             return A;
         }
     }
