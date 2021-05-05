@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-05-02 10:15:17
+ * @LastEditTime: 2021-05-06 00:11:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\oled.c
@@ -188,13 +188,15 @@ static void Stop(void)
 
 void Check_Ack(void) //Acknowledge
 {
-    unsigned char ack = 1;
+    u8 count=0;
+    u8 ack = 1;
     SDA = 1;
     SCL = 1;
     somenop();
-    while (ack == 1)
+    while (ack == 1 && count<255)
     {
         ack = SDA;
+        count++;
     }
     somenop();
     SCL = 0;
@@ -409,10 +411,10 @@ static u8 twinkBat=0;
 void DisplayBat(u8 bat)
 {
     unsigned char i, j = 0;
-    if(twinkBat==0)
-        twinkBat=3;
+    if(twinkBat==4)
+        twinkBat=0;
     else
-        twinkBat--;
+        twinkBat++;
     for (i = 0; i < 0x03; i++)
     {
         Set_Page_Address(i);
@@ -426,7 +428,14 @@ void DisplayBat(u8 bat)
             {
                 SentByte(0);
             }
-        }else
+        }else if(bat==255)
+        {
+            for (j = 0; j < 12; j++)
+            {
+                SentByte(picBat[twinkBat][i * 12 + j]);
+            }
+        }
+        else
         {
             for (j = 0; j < 12; j++)
             {

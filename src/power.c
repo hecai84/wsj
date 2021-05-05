@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-02 16:39:30
+ * @LastEditTime: 2021-05-05 23:52:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -16,7 +16,7 @@
 #define FB_CTRL P0_2
 u8 I2cRecArr[10]={0};
 u8 curVolt;
-u8 curOtg=1;
+u8 curOtg=0;
 
 void startPow(void)
 {
@@ -24,6 +24,7 @@ void startPow(void)
     Delay_ms(100);  
     curOtg=1;
     //PSTOP=0;
+    Delay_ms(500);  
     M_CTRL=1;
 }
 void stopPow(void)
@@ -54,15 +55,13 @@ void init8812(void)
         SetVolt(curVolt);
     else
         SetVolt(50);
-   
-    WriteCmd(0x01,0x31);
-    WriteCmd(0x02,0xC0);
+
     WriteCmd(0x05,0xFF);
     WriteCmd(0x06,0xFF);
     WriteCmd(0x07,0x2C);
-    WriteCmd(0x08,0x3A);
+    WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x0C);
-    WriteCmd(0x0a,0x11);
+    WriteCmd(0x0a,0x01);
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
     WriteCmd(0x00,0x09);
@@ -100,22 +99,24 @@ void SetVolt(u8 v)
     u8 set1,set2=0;
     u32 temp;
     curVolt=v;
-    temp=v*1000;
-    if(v>80)
+    temp=v*100;
+    if(v>102)
     {
-        FB_CTRL=1;
-        set1=temp/747;    //(1+100/12)*8*10
-        set2=((temp%747)/186)<<8;  //(1+100/12)*2*10
+        //FB_CTRL=1;
+        WriteCmd(0x08,0x3A);
+        set1=temp/100;    //(1+100/12)*8*10
+        set2=0;  //(1+100/12)*2*10
     }
     else
     {
-        FB_CTRL=0;
-        set1=temp/413;    //(1+100/24)*8*10
-        set2=((temp%413)/103)<<8;  //(1+100/24)*2*10
+        //FB_CTRL=0;
+        WriteCmd(0x08,0x3B);
+        set1=temp/40;    //(1+100/24)*8*10
+        set2=0;  //(1+100/24)*2*10
     }    
 
-    WriteCmd(0x03,set1);
-    WriteCmd(0x04,set2);
+    WriteCmd(0x01,set1);
+    //WriteCmd(0x02,set2);
 }
 /**
  * @description: 获取电池电量 

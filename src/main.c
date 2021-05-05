@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-02 23:16:06
- * @LastEditTime: 2021-05-02 01:56:29
+ * @LastEditTime: 2021-05-06 00:13:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\main.c
@@ -17,6 +17,7 @@
 #define BT_POW   P3_0
 #define BT_ADD  P3_1
 #define BT_MIN   P0_0
+#define POW_INT P1_6
 
 u8 test;
 u8 num;
@@ -45,15 +46,25 @@ void init()
     TR1  = 1;
     EA   = 1;
 
-
     //屏幕初始化
     Initial();
     clear();
-
+    
     //8812初始化    
     init8812();
     DisplayChar_b(curVolt);
 
+
+    
+
+}
+
+void checkInt()
+{
+    if(POW_INT==0 && curOtg==1)
+    {
+        stopPow();
+    }
 }
 
 void refreshDisplay()
@@ -64,7 +75,10 @@ void refreshDisplay()
         DisplayChar_s(GetIBus());
         refreshTime=GetSysTick();
 
-        DisplayBat(GetBat());
+        if(POW_INT==0)
+            DisplayBat(255);
+        else
+            DisplayBat(GetBat());
         
     }
 }
@@ -237,10 +251,10 @@ void main()
     DisplayBat(4);
     refreshTime=GetSysTick();
     while(1)
-    { 
+    {         
+        checkInt();
         procClick();
         refreshDisplay();
-        
         // testRead(3);
         // testRead(9);
         // Delay_ms(200);
