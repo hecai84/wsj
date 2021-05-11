@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-05 23:52:26
+ * @LastEditTime: 2021-05-09 18:49:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -17,20 +17,38 @@
 u8 I2cRecArr[10]={0};
 u8 curVolt;
 u8 curOtg=0;
+u8 forcePow=0;
 
 void startPow(void)
 {
-    WriteCmd(0x09,0x8C);
-    Delay_ms(100);  
+    u16 i;
+    M_CTRL=0;
+    WriteCmd(0x09,0x86);
     curOtg=1;
     //PSTOP=0;
-    Delay_ms(500);  
+    Delay_ms(100);  
+    for(i=0;i<1000;i++)
+    {
+        M_CTRL=0;
+        Delay_10us(1);    
+        M_CTRL=1;
+        Delay_10us(1);  
+    }
+     
+    for(i=0;i<1000;i++)
+    {
+        M_CTRL=0;
+        Delay_10us(1);    
+        M_CTRL=1;        
+        Delay_10us(1); 
+        Delay_10us(1);  
+    }
     M_CTRL=1;
 }
 void stopPow(void)
 {
     //PSTOP=1;    
-    WriteCmd(0x09,0x0C);
+    WriteCmd(0x09,0x06);
     curOtg=0;
     M_CTRL=0;
     Delay_ms(100);  
@@ -45,13 +63,16 @@ void init8812(void)
 {
     PSTOP=1;
     CE=0;
-    // P1M0=P1M0 | 0x80;
+    P1M0=P1M0 | 0x80;
     // P0M0=P0M0 | 0xC4;
     M_CTRL=0;
     FB_CTRL=0;
+    forcePow=Read_EEPROM(6);
+    if(forcePow!=1)
+        forcePow=0;
     curVolt=Read_EEPROM(7);    
     Delay_ms(100);  
-    if(curVolt>=35 && curVolt<=150)
+    if(curVolt>=30 && curVolt<=150)
         SetVolt(curVolt);
     else
         SetVolt(50);
@@ -60,7 +81,7 @@ void init8812(void)
     WriteCmd(0x06,0xFF);
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
-    WriteCmd(0x09,0x0C);
+    WriteCmd(0x09,0x06);
     WriteCmd(0x0a,0x01);
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
@@ -82,7 +103,7 @@ void VoltAdd()
 }
 void VoltMin()
 {
-    if(curVolt>35)
+    if(curVolt>30)
     {
         curVolt--;
         SetVolt(curVolt);

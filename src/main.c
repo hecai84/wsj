@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-02 23:16:06
- * @LastEditTime: 2021-05-06 00:13:40
+ * @LastEditTime: 2021-05-11 23:55:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\main.c
@@ -21,12 +21,19 @@
 
 u8 test;
 u8 num;
-u8 curBtPow,curBtMin,curBtAdd=1;
+u8 curStop,curBtPow,curBtMin,curBtAdd=1;
 u32 clickTime;
 u32 refreshTime;
 extern u8 curVolt;
 extern u8 curOtg;
 extern u8 curDisplay;
+extern u8 forcePow;
+
+void refreshDisplay();
+
+
+
+
 void testRead(u8 add)
 {
     Debug(add);
@@ -37,6 +44,45 @@ void testRead(u8 add)
         Debug(0xE0);
 }
 
+/**
+ * @description: 系统停止
+ * @param {*}
+ * @return {*}
+ */
+void SystemStop()
+{
+    curStop=0;
+    stop8812();
+    //闪屏提醒
+    clear();
+    Delay_ms(300);
+    refreshDisplay();
+    Delay_ms(300);
+    clear();
+    Delay_ms(300);
+    refreshDisplay();
+    Delay_ms(300);
+    clear();
+    Delay_ms(300);
+    refreshDisplay();
+    Delay_ms(300);
+    clear();
+    DisplayOff();
+    
+    //mcu休眠
+    PCON=2;
+}
+/**
+ * @description: 系统恢复
+ * @param {*}
+ * @return {*}
+ */
+void SystemResume()
+{
+    PCON=0;    
+    init8812();
+    DisplayOn();
+}
 
 void init()
 {
@@ -44,7 +90,10 @@ void init()
     TIMER0_initialize();    
     TR0  = 1;
     TR1  = 1;
-    EA   = 1;
+    //EX0 = 1;        //开启外部中断0
+    //IT0 = 1;                //设置外部中断0触发模式:下降沿触发
+    IEKBI = 1;         //启用键盘中断
+    EA   = 1;//中断开启
 
     //屏幕初始化
     Initial();
@@ -54,18 +103,8 @@ void init()
     init8812();
     DisplayChar_b(curVolt);
 
-
-    
-
 }
 
-void checkInt()
-{
-    if(POW_INT==0 && curOtg==1)
-    {
-        stopPow();
-    }
-}
 
 void refreshDisplay()
 {
@@ -75,11 +114,12 @@ void refreshDisplay()
         DisplayChar_s(GetIBus());
         refreshTime=GetSysTick();
 
-        if(POW_INT==0)
+        if(POW_INT==0 && curOtg==0)
             DisplayBat(255);
         else
             DisplayBat(GetBat());
         
+        DisplayShan_s(forcePow);
     }
 }
 
@@ -103,6 +143,18 @@ void powClick()
             startPow();
     }
 }
+/**
+ * @description: 长按加和减按钮
+ * @param {*}
+ * @return {*}
+ */
+void doubleAddMin()
+{
+    forcePow=~forcePow & 1;
+    DisplayShan_s(forcePow);
+    waitClickUp();
+}
+
 void doublePowAdd()
 {
 }
@@ -111,12 +163,12 @@ void doublePowMin()
 }
 void powClickLong2()
 {
+    SystemStop();
 }
 
 void powClickLong()
 {
-    u32 diffTime;
-    
+    u32 diffTime;  
 
     while(1)
     {
@@ -131,23 +183,29 @@ void powClickLong()
         }
         else if(diffTime>2000)
         {
-            if(curDisplay)
+            if(curStop==0)
             {
-                stopPow();
-                DisplayOff();
-                Write_EEPROM(7,curVolt);
-            }
-            else
-            {
-                DisplayOn();
-            }
-            while(BT_POW==0)
-            {
-                diffTime=GetSysTick()-clickTime;
-                if(diffTime>8000)
+                SystemResume();
+            }else{
+                if(curDisplay)
                 {
-                    powClickLong2();
-                    break;
+                    stopPow();
+                    DisplayOff();
+                    Write_EEPROM(6,forcePow);
+                    Write_EEPROM(7,curVolt);
+                }
+                else
+                {
+                    DisplayOn();
+                }
+                while(BT_POW==0)
+                {
+                    diffTime=GetSysTick()-clickTime;
+                    if(diffTime>5000)
+                    {
+                        powClickLong2();
+                        break;
+                    }
                 }
             }
         }else 
@@ -169,6 +227,10 @@ void minClickLong()
     VoltMin();
     DisplayChar_b(curVolt);
     Delay_ms(50);
+    if(BT_ADD==0)
+    {
+        doubleAddMin();
+    }
 }
 void addClick()
 {
@@ -179,7 +241,11 @@ void addClickLong()
 {
     VoltAdd();
     DisplayChar_b(curVolt); 
-    Delay_ms(50);
+    Delay_ms(50);    
+    if(BT_MIN==0)
+    {
+        doubleAddMin();
+    }
 }
 
 
@@ -252,7 +318,6 @@ void main()
     refreshTime=GetSysTick();
     while(1)
     {         
-        checkInt();
         procClick();
         refreshDisplay();
         // testRead(3);

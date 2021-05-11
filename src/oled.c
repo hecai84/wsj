@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-05-06 00:11:25
+ * @LastEditTime: 2021-05-09 16:57:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\oled.c
@@ -77,6 +77,8 @@ u8 code picBat[5][36]={
 0x3F,0x3F,0x3F,0x3F};
 
 u8 code picDot_s[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x30,0x30,0x00,0x00,0x00,0x00,0x00};
+
+u8 code picShan_s[]={0x00,0xC0,0xE0,0xF0,0xF8,0x9C,0x8E,0x80,0x01,0x71,0x39,0x1F,0x0F,0x07,0x03,0x00};
 
 u8 code picA_s[]={
 0x00,0x00,0xC0,0x38,0xE0,0x00,0x00,0x00,0x20,0x3C,0x23,0x02,0x02,0x27,0x38,0x20,/*"A",0*/};
@@ -508,6 +510,35 @@ void DisplayChar_b(u8 num)
         Stop();
     }
 }
+
+void DisplayShan_s(u8 visable)
+{
+    u8 i, j = 0;
+    for(i=0;i<2;i++)
+    {        
+        Set_Page_Address(i+3);
+        Set_Column_Address(64);
+        Start();
+        SentByte(Write_Address);
+        SentByte(0x40);
+
+        if(visable==1)
+        {
+            for (j = 0; j < 8; j++)
+            {
+                SentByte(picShan_s[i * 8 + j]);
+            }
+        }
+        else
+        {
+            for (j = 0; j < 8; j++)
+            {
+                SentByte(0);
+            }            
+        }
+    }
+}
+
 
 /**
  * @description: 
