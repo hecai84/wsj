@@ -1,0 +1,11 @@
+*.lst
+*.__i
+*.obj
+*.bak
+wsj.hex
+*.lnp
+*.M51
+*.plg
+*.uvopt
+*.uvproj
+wsj

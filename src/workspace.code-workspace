@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"tools.h": "c",
+			"iic.h": "c",
+			"ob38r08a1.h": "c"
+		}
+	}
+}
