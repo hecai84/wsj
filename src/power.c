@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-12 20:48:41
+ * @LastEditTime: 2021-05-12 23:45:31
  * @LastEditors: huzhenhong
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -13,7 +13,9 @@
 #define PSTOP P0_7
 #define INT P1_6
 #define M_CTRL P1_7
+#define IBUSARR_LEN 10
 u8 I2cRecArr[10]={0};
+u8 iBusArr[IBUSARR_LEN]={0};
 u8 curVolt;
 u8 isOtg=0;
 u8 forcePow=0;
@@ -21,7 +23,12 @@ u8 forcePow=0;
 void startPow(void)
 {
     u16 i;
+    u8 tempVolt=curVolt;
     M_CTRL=0;
+    if(curVolt<100 && forcePow==1)
+    {
+        SetVolt(100);
+    }
     WriteCmd(0x09,0x86);
     isOtg=1;
     //PSTOP=0;
@@ -42,7 +49,10 @@ void startPow(void)
         Delay_10us(1); 
         Delay_10us(1);  
     }
+
     M_CTRL=1;
+    Delay_ms(100);
+    SetVolt(tempVolt);
 }
 void stopPow(void)
 {
@@ -166,6 +176,20 @@ u8 GetBat()
     }
     return 0;
 }
+
+u8 GetIBusAvg()
+{
+    u8 i;
+    u16 temp=iBusArr[0];
+    for(i=1;i<IBUSARR_LEN;i++)
+    {
+        temp+=iBusArr[i];
+        iBusArr[i-1]=iBusArr[i];
+    }
+    iBusArr[IBUSARR_LEN-1]=GetIBus();
+    return temp/IBUSARR_LEN;
+}
+
 /**
  * @description:获取电流x100 
  * @param {*}
@@ -180,7 +204,7 @@ u8 GetIBus()
         if(ReadCmd(0x12,&value2))
         {
             A=value1;
-            A=(A*4+(value2>>6)+1)/2;
+            A=(A*4+(value2>>6)+1);
             return A;
         }
     }

@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-12 22:51:01
+ * @LastEditTime: 2021-05-12 23:40:06
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
@@ -33,6 +33,7 @@ u8 readyResume=0;
 u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
 u32 clickTime;
 u32 refreshTime;
+u32 refreshIBusTime;
 extern u8 curVolt;
 extern u8 isOtg;
 extern u8 isDisplay;
@@ -144,7 +145,7 @@ void refreshDisplay()
     u32 diffTime=GetSysTick()-refreshTime;
     if(diffTime>300)
     {        
-        DisplayChar_s(GetIBus());
+        DisplayChar_s(GetIBusAvg());
         refreshTime=GetSysTick();
 
         if(POW_INT==0 && isOtg==0)
@@ -153,6 +154,12 @@ void refreshDisplay()
             DisplayBat(GetBat());
         DisplayChar_b(curVolt);
         DisplayShan_s(forcePow);
+    }
+    diffTime=GetSysTick()-refreshIBusTime;
+    if(diffTime>50)
+    {   
+        refreshIBusTime=GetSysTick();     
+        GetIBusAvg();
     }
 }
 
@@ -362,6 +369,7 @@ void main()
     num=0;
     DisplayBat(4);
     refreshTime=GetSysTick();
+    refreshIBusTime=GetSysTick();
     while(1)
     {         
         checkSleep();
