@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-12 23:40:06
+ * @LastEditTime: 2021-05-13 00:02:11
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"

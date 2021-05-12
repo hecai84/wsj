@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-12 23:45:31
+ * @LastEditTime: 2021-05-13 00:41:03
  * @LastEditors: huzhenhong
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -19,11 +19,15 @@ u8 iBusArr[IBUSARR_LEN]={0};
 u8 curVolt;
 u8 isOtg=0;
 u8 forcePow=0;
+u8 stableIBus=0;
+u8 stableCount=0;
 
 void startPow(void)
 {
     u16 i;
     u8 tempVolt=curVolt;
+    stableIBus=0;
+    stableCount=0;
     M_CTRL=0;
     if(curVolt<100 && forcePow==1)
     {
@@ -117,6 +121,25 @@ void VoltMin()
         SetVolt(curVolt);
     }
 }
+/**
+ * @description: 设置限流
+ * @param {u8} v
+ * @return {*}
+ */
+void setIBusLim(u8 v)
+{
+    if(v<6)
+    {
+        WriteCmd(0x05,0x88);
+    }else if(v<10)
+    {
+        WriteCmd(0x05,0x53);
+    }else
+    {
+        WriteCmd(0x05,0x38);
+    }
+}
+
 
 /**
  * @description: 设置电压
@@ -129,6 +152,7 @@ void SetVolt(u8 v)
     u32 temp;
     curVolt=v;
     temp=v*100;
+    setIBusLim(v);
     if(v>102)
     {
         //FB_CTRL=1;
@@ -147,6 +171,32 @@ void SetVolt(u8 v)
     WriteCmd(0x01,set1);
     //WriteCmd(0x02,set2);
 }
+/**
+ * @description: 动态调整电压
+ * @param {u8} i
+ * @return {*}
+ */
+void SetVoltTemp(u8 i)
+{
+    u8 temp;
+    u8 tempVolt=curVolt;
+    if(curVolt<90)
+    {
+        if(i<=stableIBus)
+        {
+            SetVolt(curVolt);
+        }else
+        {
+            temp=(i-stableIBus)*6/10+curVolt;
+            if(temp>90)
+                temp=90;
+            SetVolt(temp);
+            curVolt=tempVolt;
+        }
+    }
+}
+
+
 /**
  * @description: 获取电池电量 
  * @param {*}
@@ -181,13 +231,29 @@ u8 GetIBusAvg()
 {
     u8 i;
     u16 temp=iBusArr[0];
+
     for(i=1;i<IBUSARR_LEN;i++)
     {
         temp+=iBusArr[i];
         iBusArr[i-1]=iBusArr[i];
     }
     iBusArr[IBUSARR_LEN-1]=GetIBus();
-    return temp/IBUSARR_LEN;
+    i=temp/IBUSARR_LEN;
+    if(isOtg==1 && forcePow==0 && stableCount<5 && i>2)
+    {        
+        if(stableIBus>i && stableIBus-i<2)
+        {
+            stableCount++;
+        }else if(stableIBus<=i && i-stableIBus<2)
+        {
+            stableCount++;
+        }else
+            stableCount=0;
+        stableIBus=i;
+    }
+    if(isOtg==1 && forcePow==0 && stableCount>=5)
+        SetVoltTemp(i);
+    return i;
 }
 
 /**

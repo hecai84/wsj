@@ -9,3 +9,5 @@ wsj.hex
 *.uvopt
 *.uvproj
 wsj
+.vscode/keil-assistant.log
+.vscode/uv4.log.lock
