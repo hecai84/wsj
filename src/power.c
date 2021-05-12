@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-12 17:18:16
+ * @LastEditTime: 2021-05-12 20:48:41
  * @LastEditors: huzhenhong
  * @Description: In User Settings Edit
- * @FilePath: \wsj\src\power.c
+ * @FilePath: \WSJ\src\power.c
  */
 #include "power.h"
 #include "IIC.h"
@@ -13,7 +13,6 @@
 #define PSTOP P0_7
 #define INT P1_6
 #define M_CTRL P1_7
-#define FB_CTRL P0_2
 u8 I2cRecArr[10]={0};
 u8 curVolt;
 u8 isOtg=0;
@@ -66,7 +65,6 @@ void init8812(void)
     P1M0=P1M0 | 0x80;
     // P0M0=P0M0 | 0xC4;
     M_CTRL=0;
-    FB_CTRL=0;
     forcePow=Read_EEPROM(6);
     if(forcePow!=1)
         forcePow=0;

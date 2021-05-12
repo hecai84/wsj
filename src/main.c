@@ -3,8 +3,8 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-12 14:12:16
- * @FilePath: \wsj\src\main.c
+ * @LastEditTime: 2021-05-12 22:51:01
+ * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
 #include "EEPROM.h"
@@ -14,6 +14,14 @@
 #include "oled.h"
 #include "Timer.h"
 
+
+#define KBI_VECTOR  11          //KBI Interrupt Vevtor
+#define d_KBLS      0x00        //KBI Low/High level detection selection (0~0x0F)
+#define d_KBEX      0x01        //KBI Input Enable (0~0x0F)
+#define d_KBDEN     0x00        //KBI De-bounce Function Enable
+#define d_KBDS      0x00        //KBD[1:0] KBI De-bounce Time Selection (0~3)
+#define d_KBIIE     0x01        //KBI Interrupt Enable bit
+
 #define BT_POW   P3_0
 #define BT_ADD  P3_1
 #define BT_MIN   P0_0
@@ -21,7 +29,8 @@
 
 u8 test;
 u8 num;
-u8 isRunning,curBtPow,curBtMin,curBtAdd=1;
+u8 readyResume=0;
+u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
 u32 clickTime;
 u32 refreshTime;
 extern u8 curVolt;
@@ -29,9 +38,11 @@ extern u8 isOtg;
 extern u8 isDisplay;
 extern u8 forcePow;
 
+
+//函数定义--------------------------------
 void refreshDisplay();
-
-
+void powClickLong();
+//---------------------------------------
 
 
 
@@ -42,9 +53,10 @@ void refreshDisplay();
  */
 void SystemStop()
 {
-    isRunning=0;
     stop8812();
     //闪屏提醒
+    DisplayOn();
+    Delay_ms(300);
     clear();
     Delay_ms(300);
     refreshDisplay();
@@ -59,7 +71,9 @@ void SystemStop()
     Delay_ms(300);
     clear();
     DisplayOff();
+    Delay_ms(3000);
     
+    isRunning=0;
     //mcu休眠
     PCON=2;
 }
@@ -70,7 +84,10 @@ void SystemStop()
  */
 void SystemResume()
 {
-    PCON=0;    
+    //PCON=0;  
+    isRunning=1;  
+    readyResume=0;
+    Delay_ms(2000);
     init8812();
     DisplayOn();
 }
@@ -83,7 +100,14 @@ void init()
     TR1  = 1;
     //EX0 = 1;        //开启外部中断0
     //IT0 = 1;                //设置外部中断0触发模式:下降沿触发
-    IEKBI = 1;         //启用键盘中断
+
+    IEKBI = (d_KBIIE);              //Enable KBI Interrupt Function
+    //KBD   = (d_KBDEN<<7)|(d_KBDS);  //Enable KBI De-bounce and Select De-bounce Time Function
+    KBLS  = (d_KBLS);               //KBI Input High/Low Level Select
+    KBE   = (d_KBEX);               //KBI Input Channel Enable
+
+
+
     EA   = 1;//中断开启
 
     //屏幕初始化
@@ -94,6 +118,24 @@ void init()
     init8812();
     DisplayChar_b(curVolt);
 
+}
+
+
+void KBI_ISR(void) interrupt KBI_VECTOR //KBI Interrupt Subroutine
+{
+    switch(KBF)         //Decision Occur Channel Flag (KBF)
+    {
+        
+    case 0x01:          //KBI Channel 0 Occur Interrupt(KBF0)
+        //休眠状态中,如果不按电源键,只是中断不唤醒设备
+        if(isRunning==0 && BT_POW==0)
+        {
+            readyResume=1;
+        }
+        break;
+    } 
+    KBF=0;
+    ////KBIIF=0;            //Hardware Clear KBI Flag
 }
 
 
@@ -109,7 +151,7 @@ void refreshDisplay()
             DisplayBat(255);
         else
             DisplayBat(GetBat());
-        
+        DisplayChar_b(curVolt);
         DisplayShan_s(forcePow);
     }
 }
@@ -151,16 +193,25 @@ void doublePowAdd()
 }
 void doublePowMin()
 {
+    u32 diffTime;
+    if(isRunning)
+    {
+        while(BT_POW==0 && BT_MIN==0)
+        {
+            diffTime=GetSysTick()-clickTime;
+            if(diffTime>3000)
+            {
+                SystemStop();
+                break;
+            }
+        }
+    }
 }
-void powClickLong2()
-{
-    SystemStop();
-}
+
 
 void powClickLong()
 {
     u32 diffTime;  
-
     while(1)
     {
         diffTime=GetSysTick()-clickTime;
@@ -172,36 +223,21 @@ void powClickLong()
         {
             doublePowMin();
         }
-        else if(diffTime>2000)
+        else
         {
-            if(isRunning==0)
+            if(isDisplay)
             {
-                SystemResume();
-            }else{
-                if(isDisplay)
-                {
-                    stopPow();
-                    DisplayOff();
-                    Write_EEPROM(6,forcePow);
-                    Write_EEPROM(7,curVolt);
-                }
-                else
-                {
-                    DisplayOn();
-                }
-                while(BT_POW==0)
-                {
-                    diffTime=GetSysTick()-clickTime;
-                    if(diffTime>5000)
-                    {
-                        powClickLong2();
-                        break;
-                    }
-                }
+                stopPow();
+                DisplayOff();
+                Write_EEPROM(6,forcePow);
+                Write_EEPROM(7,curVolt);
             }
-        }else 
-            continue;
-        
+            else
+            {
+                DisplayOn();
+            }
+
+        }        
         waitClickUp();
         break;
     } 
@@ -304,19 +340,15 @@ void procClick()
  */
 void checkSleep()
 {
-    u32 diffTime;
-    diffTime=GetSysTick()-clickTime;
     if(isRunning==0)
     {
-        if(diffTime>5000)
+        if(readyResume==1)
         {
-            SystemStop();
+            SystemResume();
         }
-    }else if(isOtg==0)
-    {
-        if(diffTime>20000)
+        else
         {
-            DisplayOff();
+            PCON=2;
         }
     }
 }
@@ -332,9 +364,14 @@ void main()
     refreshTime=GetSysTick();
     while(1)
     {         
+        checkSleep();
         procClick();
         refreshDisplay();
-      
-        checkSleep();
+        // if(isRunning==0)
+        // {
+        //     DisplayOn();
+        //     refreshDisplay();
+        // }
+        //checkSleep();
     }
 }
