@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-09 18:49:29
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-05-12 17:18:16
+ * @LastEditors: huzhenhong
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\power.c
+ * @FilePath: \wsj\src\power.c
  */
 #include "power.h"
 #include "IIC.h"
@@ -16,7 +16,7 @@
 #define FB_CTRL P0_2
 u8 I2cRecArr[10]={0};
 u8 curVolt;
-u8 curOtg=0;
+u8 isOtg=0;
 u8 forcePow=0;
 
 void startPow(void)
@@ -24,7 +24,7 @@ void startPow(void)
     u16 i;
     M_CTRL=0;
     WriteCmd(0x09,0x86);
-    curOtg=1;
+    isOtg=1;
     //PSTOP=0;
     Delay_ms(100);  
     for(i=0;i<1000;i++)
@@ -49,7 +49,7 @@ void stopPow(void)
 {
     //PSTOP=1;    
     WriteCmd(0x09,0x06);
-    curOtg=0;
+    isOtg=0;
     M_CTRL=0;
     Delay_ms(100);  
 }
@@ -89,7 +89,7 @@ void init8812(void)
 
     
     Delay_ms(100);  
-    curOtg=0;
+    isOtg=0;
     PSTOP=0;
 }
 
@@ -182,7 +182,7 @@ u8 GetIBus()
         if(ReadCmd(0x12,&value2))
         {
             A=value1;
-            A=(A*4+(value2&0x3)+1)/2;
+            A=(A*4+(value2>>6)+1)/2;
             return A;
         }
     }

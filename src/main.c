@@ -1,10 +1,10 @@
 /*
- * @Author: your name
- * @Date: 2021-04-02 23:16:06
- * @LastEditTime: 2021-05-11 23:55:18
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\main.c
+ * @Description: 
+ * @Author: hecai
+ * @Date: 2021-05-12 10:42:58
+ * @LastEditors: huzhenhong
+ * @LastEditTime: 2021-05-12 14:12:16
+ * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
 #include "EEPROM.h"
@@ -21,12 +21,12 @@
 
 u8 test;
 u8 num;
-u8 curStop,curBtPow,curBtMin,curBtAdd=1;
+u8 isRunning,curBtPow,curBtMin,curBtAdd=1;
 u32 clickTime;
 u32 refreshTime;
 extern u8 curVolt;
-extern u8 curOtg;
-extern u8 curDisplay;
+extern u8 isOtg;
+extern u8 isDisplay;
 extern u8 forcePow;
 
 void refreshDisplay();
@@ -34,15 +34,6 @@ void refreshDisplay();
 
 
 
-void testRead(u8 add)
-{
-    Debug(add);
-    if(ReadCmd(add,&test))
-    {
-        Debug(test);
-    }else
-        Debug(0xE0);
-}
 
 /**
  * @description: 系统停止
@@ -51,7 +42,7 @@ void testRead(u8 add)
  */
 void SystemStop()
 {
-    curStop=0;
+    isRunning=0;
     stop8812();
     //闪屏提醒
     clear();
@@ -114,7 +105,7 @@ void refreshDisplay()
         DisplayChar_s(GetIBus());
         refreshTime=GetSysTick();
 
-        if(POW_INT==0 && curOtg==0)
+        if(POW_INT==0 && isOtg==0)
             DisplayBat(255);
         else
             DisplayBat(GetBat());
@@ -133,13 +124,13 @@ void waitClickUp()
 
 void powClick()
 {
-    if(curOtg==1)
+    if(isOtg==1)
     {
         stopPow();
     }
     else 
     {
-        if(curDisplay==1)
+        if(isDisplay==1)
             startPow();
     }
 }
@@ -183,11 +174,11 @@ void powClickLong()
         }
         else if(diffTime>2000)
         {
-            if(curStop==0)
+            if(isRunning==0)
             {
                 SystemResume();
             }else{
-                if(curDisplay)
+                if(isDisplay)
                 {
                     stopPow();
                     DisplayOff();
@@ -306,6 +297,29 @@ void procClick()
     }
 }
 
+/**
+ * @description: 检测休眠
+ * @param {*}
+ * @return {*}
+ */
+void checkSleep()
+{
+    u32 diffTime;
+    diffTime=GetSysTick()-clickTime;
+    if(isRunning==0)
+    {
+        if(diffTime>5000)
+        {
+            SystemStop();
+        }
+    }else if(isOtg==0)
+    {
+        if(diffTime>20000)
+        {
+            DisplayOff();
+        }
+    }
+}
 
 void main()
 {
@@ -320,10 +334,7 @@ void main()
     {         
         procClick();
         refreshDisplay();
-        // testRead(3);
-        // testRead(9);
-        // Delay_ms(200);
       
-        
+        checkSleep();
     }
 }

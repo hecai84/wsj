@@ -23,7 +23,7 @@ bit log = 0;
 #define Start_column 0x00
 #define Start_page 0x00
 
-u8 curDisplay;
+u8 isDisplay;
 
 void Write_number(uchar code *n, uchar k, uchar station_dot);
 void Set_Page_Address(unsigned char add);
@@ -353,7 +353,7 @@ void Initial(void)
     SentByte(0x80);
 
     SentByte(0xaf); //--turn on oled panel
-    curDisplay=1;
+    isDisplay=1;
     Stop();
 }
 
@@ -368,7 +368,7 @@ void DisplayOff()
     SentByte(0x80);
     SentByte(0xae);
     Stop();
-    curDisplay=0;
+    isDisplay=0;
     Delay_ms(100);
 }
 void DisplayOn()
@@ -381,7 +381,7 @@ void DisplayOn()
     SentByte(0x80);
     SentByte(0xaf);
     Stop();
-    curDisplay=1;
+    isDisplay=1;
     Delay_ms(100);
 }
 
