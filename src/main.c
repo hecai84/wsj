@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-13 00:02:11
+ * @LastEditTime: 2021-05-14 01:43:51
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
@@ -30,7 +30,9 @@
 u8 test;
 u8 num;
 u8 readyResume=0;
+u8 tempDisplay=0;
 u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
+u8 curIBus;
 u32 clickTime;
 u32 refreshTime;
 u32 refreshIBusTime;
@@ -46,6 +48,15 @@ void powClickLong();
 //---------------------------------------
 
 
+void testRead(u8 add)
+{
+    Debug(add);
+    if(ReadCmd(add,&test))
+    {
+        Debug(test);
+    }else
+        Debug(0xE0);
+}
 
 /**
  * @description: 系统停止
@@ -54,6 +65,7 @@ void powClickLong();
  */
 void SystemStop()
 {
+    stopPow();
     stop8812();
     //闪屏提醒
     DisplayOn();
@@ -72,6 +84,7 @@ void SystemStop()
     Delay_ms(300);
     clear();
     DisplayOff();
+    tempDisplay=0;
     Delay_ms(3000);
     
     isRunning=0;
@@ -90,7 +103,9 @@ void SystemResume()
     readyResume=0;
     Delay_ms(2000);
     init8812();
+    stopPow();
     DisplayOn();
+    curBtPow=1;
 }
 
 void init()
@@ -139,27 +154,49 @@ void KBI_ISR(void) interrupt KBI_VECTOR //KBI Interrupt Subroutine
     ////KBIIF=0;            //Hardware Clear KBI Flag
 }
 
-
 void refreshDisplay()
 {
     u32 diffTime=GetSysTick()-refreshTime;
     if(diffTime>300)
     {        
-        DisplayChar_s(GetIBusAvg());
         refreshTime=GetSysTick();
-
-        if(POW_INT==0 && isOtg==0)
-            DisplayBat(255);
+        //充电状态，且ibus电流大于100ma
+        if(isOtg==0 && curIBus>10)
+        {
+            if(isDisplay==0)
+            {
+                if(tempDisplay==0)
+                {
+                    DisplayOn();
+                    clear();
+                    isDisplay=0;  
+                    tempDisplay=1; 
+                }             
+                DisplayBat(255);
+                return;
+            }else
+                DisplayBat(255);
+        }
         else
-            DisplayBat(GetBat());
+            DisplayBat(GetVBatAvg());
+        //放电才显示电流
+        if(isOtg==1)
+        {
+            DisplayChar_s(curIBus);
+        }else
+        {
+            DisplayChar_s(0);
+        }
+        
         DisplayChar_b(curVolt);
         DisplayShan_s(forcePow);
     }
     diffTime=GetSysTick()-refreshIBusTime;
-    if(diffTime>50)
+    if(diffTime>100)
     {   
-        refreshIBusTime=GetSysTick();     
-        GetIBusAvg();
+        refreshIBusTime=GetSysTick();  
+        //GetIBusAvg();   
+        curIBus=GetIBusAvg();
     }
 }
 
@@ -180,7 +217,9 @@ void powClick()
     else 
     {
         if(isDisplay==1)
+        {
             startPow();
+        }
     }
 }
 /**
@@ -236,12 +275,25 @@ void powClickLong()
             {
                 stopPow();
                 DisplayOff();
+                tempDisplay=0;
                 Write_EEPROM(6,forcePow);
                 Write_EEPROM(7,curVolt);
             }
             else
             {
+                stopPow();
                 DisplayOn();
+                refreshTime=0;
+                refreshDisplay();
+                refreshTime=0;
+                refreshDisplay();
+                refreshTime=0;
+                refreshDisplay();
+                refreshTime=0;
+                refreshDisplay();
+                refreshTime=0;
+                refreshDisplay();
+                curBtPow=1;
             }
 
         }        
@@ -297,7 +349,6 @@ void procClick()
         {
             curBtPow=0;
             clickTime=GetSysTick();
-            powClick();
         }else
         {
             diffTime=GetSysTick()-clickTime;
@@ -334,6 +385,11 @@ void procClick()
         }
     }else
     {
+        //释放的时候才触发电源按钮
+        if(curBtPow==0)
+        {
+            powClick();
+        }
         curBtPow=1;
         curBtMin=1;
         curBtAdd=1;
@@ -347,6 +403,7 @@ void procClick()
  */
 void checkSleep()
 {
+    u32 curTime=GetSysTick();
     if(isRunning==0)
     {
         if(readyResume==1)
@@ -356,6 +413,17 @@ void checkSleep()
         else
         {
             PCON=2;
+        }
+    }else
+    {
+        
+        if(isOtg==0 && isDisplay)
+        {
+            if(curTime-clickTime > 600000)
+            {
+                DisplayOff();
+                tempDisplay=0;
+            }
         }
     }
 }
@@ -375,6 +443,7 @@ void main()
         checkSleep();
         procClick();
         refreshDisplay();
+        //Delay_ms(100);
         // if(isRunning==0)
         // {
         //     DisplayOn();

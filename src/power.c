@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-13 00:41:03
+ * @LastEditTime: 2021-05-14 01:08:47
  * @LastEditors: huzhenhong
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -14,13 +14,20 @@
 #define INT P1_6
 #define M_CTRL P1_7
 #define IBUSARR_LEN 10
-u8 I2cRecArr[10]={0};
-u8 iBusArr[IBUSARR_LEN]={0};
+#define VBATARR_LEN 5
+u8 idata I2cRecArr[10]={0};
+u8 idata iBusArr[IBUSARR_LEN]={0};
+u16 idata vBatArr[VBATARR_LEN]={0};
 u8 curVolt;
 u8 isOtg=0;
 u8 forcePow=0;
 u8 stableIBus=0;
 u8 stableCount=0;
+u8 emptyIBus=0;
+
+u8 ReadCmd(u8 addr,u8 * dat);
+void setIBusLim(u8 v);
+
 
 void startPow(void)
 {
@@ -33,8 +40,18 @@ void startPow(void)
     {
         SetVolt(100);
     }
+    
+    WriteCmd(0x05,0xFF);
+    WriteCmd(0x06,0xFF);
     WriteCmd(0x09,0x86);
+    isOtg=0;
+    for(i=0;i<30;i++)
+    {
+        emptyIBus=GetIBusAvg();
+    }
+
     isOtg=1;
+
     //PSTOP=0;
     Delay_ms(100);  
     for(i=0;i<1000;i++)
@@ -56,11 +73,13 @@ void startPow(void)
 
     M_CTRL=1;
     Delay_ms(100);
+    setIBusLim(tempVolt);
     SetVolt(tempVolt);
 }
 void stopPow(void)
 {
     //PSTOP=1;    
+    WriteCmd(0x06,0x19);
     WriteCmd(0x09,0x06);
     isOtg=0;
     M_CTRL=0;
@@ -89,8 +108,8 @@ void init8812(void)
     else
         SetVolt(50);
 
-    WriteCmd(0x05,0xFF);
-    WriteCmd(0x06,0xFF);
+    WriteCmd(0x05,0x95);
+    WriteCmd(0x06,0x19);
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x06);
@@ -98,6 +117,7 @@ void init8812(void)
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
     WriteCmd(0x00,0x09);
+
 
     
     Delay_ms(100);  
@@ -128,15 +148,15 @@ void VoltMin()
  */
 void setIBusLim(u8 v)
 {
-    if(v<6)
+    if(v<60)
     {
-        WriteCmd(0x05,0x88);
-    }else if(v<10)
+        WriteCmd(0x05,0x95);
+    }else if(v<100)
     {
-        WriteCmd(0x05,0x53);
+        WriteCmd(0x05,0x55);
     }else
     {
-        WriteCmd(0x05,0x38);
+        WriteCmd(0x05,0x35);
     }
 }
 
@@ -202,58 +222,44 @@ void SetVoltTemp(u8 i)
  * @param {*}
  * @return {*}
  */
-u8 GetBat()
+u16 GetVBat()
 {
     u8 value1,value2;
-    u16 v;
+    u16 v=0;
     if(ReadCmd(0x0F,&value1))
     {
         if(ReadCmd(0x10,&value2))
         {
             v=value1;
-            v=(v*4+(value2>>8)+1)*10;
-            if(v<6800)
-                return 0;
-            else if(v<7200)
-                return 1;
-            else if(v<7600)
-                return 2;
-            else if(v<8000)
-                return 3;
-            else
-                return 4;
+            v=(v*4+(value2>>6)+1)*10;      
         }
     }
-    return 0;
+    return v;
 }
 
-u8 GetIBusAvg()
+u8 GetVBatAvg()
 {
     u8 i;
-    u16 temp=iBusArr[0];
+    u16 temp=vBatArr[0];
 
-    for(i=1;i<IBUSARR_LEN;i++)
+    for(i=1;i<VBATARR_LEN;i++)
     {
-        temp+=iBusArr[i];
-        iBusArr[i-1]=iBusArr[i];
+        temp+=vBatArr[i];
+        vBatArr[i-1]=vBatArr[i];
     }
-    iBusArr[IBUSARR_LEN-1]=GetIBus();
-    i=temp/IBUSARR_LEN;
-    if(isOtg==1 && forcePow==0 && stableCount<5 && i>2)
-    {        
-        if(stableIBus>i && stableIBus-i<2)
-        {
-            stableCount++;
-        }else if(stableIBus<=i && i-stableIBus<2)
-        {
-            stableCount++;
-        }else
-            stableCount=0;
-        stableIBus=i;
-    }
-    if(isOtg==1 && forcePow==0 && stableCount>=5)
-        SetVoltTemp(i);
-    return i;
+    vBatArr[VBATARR_LEN-1]=GetVBat();
+    temp=temp/VBATARR_LEN; 
+
+    if(temp<6600)
+        return 0;
+    else if(temp<7000)
+        return 1;
+    else if(temp<7400)
+        return 2;
+    else if(temp<8000)
+        return 3;
+    else
+        return 4;
 }
 
 /**
@@ -276,6 +282,87 @@ u8 GetIBus()
     }
     return 0;
 }
+
+
+u8 GetIBusAvg()
+{
+    u8 i;
+    u16 temp=iBusArr[0];
+
+    for(i=1;i<IBUSARR_LEN;i++)
+    {
+        temp+=iBusArr[i];
+        iBusArr[i-1]=iBusArr[i];
+    }
+    iBusArr[IBUSARR_LEN-1]=GetIBus();
+    i=temp/IBUSARR_LEN;
+    if(isOtg==1)
+    {
+        if(i>emptyIBus)
+            i=i-emptyIBus;
+        else
+            i=0;
+    }
+
+
+    if(isOtg==1 && forcePow==0 && stableCount<10 && i>10)
+    {        
+        if(stableIBus>i && stableIBus-i<2)
+        {
+            stableCount++;
+        }else if(stableIBus<=i && i-stableIBus<2)
+        {
+            stableCount++;
+        }else
+            stableCount=0;
+        stableIBus=i;
+    }
+    if(isOtg==1 && forcePow==0 && stableCount>=5)
+        SetVoltTemp(i);
+    return i;
+}
+
+
+// u8 GetIBat()
+// {
+//     u8 value1,value2;
+//     u16 A;
+//     if(ReadCmd(0x13,&value1))
+//     {
+//         if(ReadCmd(0x14,&value2))
+//         {
+//             A=value1;
+//             A=(A*4+(value2>>6)+1);
+//             return A;
+//         }
+//     }
+//     return 0;
+// }
+
+
+// u8 GetIBatAvg()
+// {
+//     u8 i;
+//     u16 temp=iBatArr[0];
+
+//     for(i=1;i<IBUSARR_LEN;i++)
+//     {
+//         temp+=iBatArr[i];
+//         iBatArr[i-1]=iBatArr[i];
+//     }
+//     iBatArr[IBUSARR_LEN-1]=GetIBat();
+//     i=temp/IBUSARR_LEN;
+//     if(isOtg==1)
+//     {
+//         if(i>emptyIBat)
+//             i=i-emptyIBat;
+//         else
+//             i=0;
+//     }
+        
+//     return i;
+// }
+
 
 
 u8 ReadCmd(u8 addr,u8 * dat)
