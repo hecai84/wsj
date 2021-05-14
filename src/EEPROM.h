@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Author: hecai
+ * @Date: 2021-05-12 19:53:31
+ * @LastEditors: huzhenhong
+ * @LastEditTime: 2021-05-14 21:10:42
+ * @FilePath: \WSJ\src\EEPROM.h
+ */
 /*--------------------------------------------------------------------------
 Header file for EEPROM.
 Modify on 2017/03/08.
@@ -26,10 +34,7 @@ void main()
 
 void ISP_Enable(void);
 void ISP_Disable(void);
-void ROM_1ByteProgram(unsigned int Addr, unsigned char Data);
-void ROM_2ByteProgram(unsigned int Addr, unsigned int Data);
 void Write_EEPROM(unsigned char Addr, unsigned char Data);
 unsigned char Read_EEPROM(unsigned char Addr);
-unsigned char ROM_ByteRead(unsigned int Addr);
 
 #endif

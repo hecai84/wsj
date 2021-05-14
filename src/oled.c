@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-05-13 21:58:09
+ * @LastEditTime: 2021-05-14 21:08:02
  * @LastEditors: huzhenhong
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\oled.c
@@ -24,8 +24,8 @@ bit log = 0;
 #define Start_page 0x00
 
 u8 isDisplay;
+u8 tempDisplay=0;
 
-void Write_number(uchar code *n, uchar k, uchar station_dot);
 void Set_Page_Address(unsigned char add);
 void Set_Column_Address(unsigned char add);
 void Initial(void);
@@ -36,7 +36,6 @@ void Check_Ack(void); //Acknowledge
 static void Stop(void);
 static void Start(void);
 void Send_ACK(void);
-unsigned char ReceiveByte(void);
 
 
 static void somenop()  
@@ -171,34 +170,6 @@ u8 code picNum_b[10][36]={
 
 
 
-
-
-
-void Write_number(uchar code *n, uchar k, uchar station_dot)
-{
-    uchar i;
-    Start();
-    SentByte(Write_Address);
-    SentByte(0x40);
-    for (i = 0; i < 8; i++)
-    {
-        SentByte(*(n + 16 * k + i));
-    }
-    Stop();
-
-    Set_Page_Address(Start_page + 1);
-    Set_Column_Address(Start_column + station_dot * 8);
-    Start();
-    SentByte(Write_Address);
-    SentByte(0x40);
-    for (i = 8; i < 16; i++)
-    {
-        SentByte(*(n + 16 * k + i));
-    }
-    Stop();
-}
-
-
 static void Start(void)
 {
     SDA = 1;
@@ -254,35 +225,8 @@ void SentByte(unsigned char Byte)
     Check_Ack();
 }
 
-unsigned char ReceiveByte(void)
-{
-    uchar i, rudata = 0;
-    SCL = 0;
-    SDA = 1;
-    for (i = 0; i < 8; i++)
-    {
-        SCL = 1;
-        somenop();
-        if (SDA == 1)
-            rudata |= 0x01;
-        else
-            rudata |= 0x00;
-        rudata = rudata << 1;
-        SCL = 0;
-        somenop();
-    }
-    Send_ACK();
-    return rudata;
-}
 
-void Send_ACK(void)
-{
-    SCL = 0;
-    SDA = 0;
-    somenop();
-    SCL = 1;
-    SCL = 0;
-}
+
 
 // Set page address
 void Set_Page_Address(unsigned char add)
@@ -400,6 +344,7 @@ void DisplayOff()
     SentByte(0xae);
     Stop();
     isDisplay=0;
+    tempDisplay=0;
     Delay_ms(100);
 }
 void DisplayOn()

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-04-02 00:46:37
- * @LastEditTime: 2021-05-01 01:15:11
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-05-14 21:05:14
+ * @LastEditors: huzhenhong
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\IIC.c
  */
@@ -24,13 +24,7 @@ void write_byte(unsigned char);
 unsigned char read_byte();   
   
 
-//端口初始化  
-void initI2C()  
-{  
-    sda = 1;  
-    scl = 1;  
-    somenop();  
-}  
+
 //起始信号  
 void start()  
 {  

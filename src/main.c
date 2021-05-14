@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-14 01:43:51
+ * @LastEditTime: 2021-05-14 21:05:36
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
@@ -30,7 +30,6 @@
 u8 test;
 u8 num;
 u8 readyResume=0;
-u8 tempDisplay=0;
 u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
 u8 curIBus;
 u32 clickTime;
@@ -39,6 +38,7 @@ u32 refreshIBusTime;
 extern u8 curVolt;
 extern u8 isOtg;
 extern u8 isDisplay;
+extern u8 tempDisplay;
 extern u8 forcePow;
 
 
@@ -48,15 +48,15 @@ void powClickLong();
 //---------------------------------------
 
 
-void testRead(u8 add)
-{
-    Debug(add);
-    if(ReadCmd(add,&test))
-    {
-        Debug(test);
-    }else
-        Debug(0xE0);
-}
+// void testRead(u8 add)
+// {
+//     Debug(add);
+//     if(ReadCmd(add,&test))
+//     {
+//         Debug(test);
+//     }else
+//         Debug(0xE0);
+// }
 
 /**
  * @description: 系统停止
@@ -84,7 +84,6 @@ void SystemStop()
     Delay_ms(300);
     clear();
     DisplayOff();
-    tempDisplay=0;
     Delay_ms(3000);
     
     isRunning=0;
@@ -160,6 +159,42 @@ void refreshDisplay()
     if(diffTime>300)
     {        
         refreshTime=GetSysTick();
+
+        if(isDisplay==0)
+        {
+            //关屏的时候充电显示电池图标，大于等于100ma的时候才算充电。
+            if(isOtg==0 && curIBus>=10)
+            {
+                if(tempDisplay==0)
+                {
+                    DisplayOn();
+                    clear();
+                    isDisplay=0;  
+                    tempDisplay=1; 
+                }             
+                DisplayBat(255);
+            }else
+            {
+                //关屏充电，拔掉适配器之后重新关闭屏幕
+                if(tempDisplay==1)
+                    DisplayOff();
+            }
+        }else
+        {
+            DisplayBat(255);
+            //放电才显示电流
+            if(isOtg==1)
+            {
+                DisplayChar_s(curIBus);
+            }else
+            {
+                DisplayChar_s(0);
+            }
+            
+            DisplayChar_b(curVolt);
+            DisplayShan_s(forcePow);
+        }
+
         //充电状态，且ibus电流大于100ma
         if(isOtg==0 && curIBus>10)
         {
@@ -216,7 +251,8 @@ void powClick()
     }
     else 
     {
-        if(isDisplay==1)
+        //屏幕有显示，且没有充电的时候才打开
+        if(isDisplay==1 && curIBus<10)
         {
             startPow();
         }
@@ -275,7 +311,6 @@ void powClickLong()
             {
                 stopPow();
                 DisplayOff();
-                tempDisplay=0;
                 Write_EEPROM(6,forcePow);
                 Write_EEPROM(7,curVolt);
             }
@@ -293,10 +328,11 @@ void powClickLong()
                 refreshDisplay();
                 refreshTime=0;
                 refreshDisplay();
-                curBtPow=1;
             }
 
-        }        
+        } 
+        
+        curBtPow=1;       
         waitClickUp();
         break;
     } 
@@ -422,7 +458,6 @@ void checkSleep()
             if(curTime-clickTime > 600000)
             {
                 DisplayOff();
-                tempDisplay=0;
             }
         }
     }
