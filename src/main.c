@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-14 21:05:36
+ * @LastEditTime: 2021-05-16 22:04:21
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
@@ -181,7 +181,7 @@ void refreshDisplay()
             }
         }else
         {
-            DisplayBat(255);
+            DisplayBat(GetVBatAvg());
             //放电才显示电流
             if(isOtg==1)
             {
@@ -194,37 +194,6 @@ void refreshDisplay()
             DisplayChar_b(curVolt);
             DisplayShan_s(forcePow);
         }
-
-        //充电状态，且ibus电流大于100ma
-        if(isOtg==0 && curIBus>10)
-        {
-            if(isDisplay==0)
-            {
-                if(tempDisplay==0)
-                {
-                    DisplayOn();
-                    clear();
-                    isDisplay=0;  
-                    tempDisplay=1; 
-                }             
-                DisplayBat(255);
-                return;
-            }else
-                DisplayBat(255);
-        }
-        else
-            DisplayBat(GetVBatAvg());
-        //放电才显示电流
-        if(isOtg==1)
-        {
-            DisplayChar_s(curIBus);
-        }else
-        {
-            DisplayChar_s(0);
-        }
-        
-        DisplayChar_b(curVolt);
-        DisplayShan_s(forcePow);
     }
     diffTime=GetSysTick()-refreshIBusTime;
     if(diffTime>100)
