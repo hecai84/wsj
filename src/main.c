@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-16 22:04:21
+ * @LastEditTime: 2021-05-22 18:59:17
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
@@ -40,6 +40,8 @@ extern u8 isOtg;
 extern u8 isDisplay;
 extern u8 tempDisplay;
 extern u8 forcePow;
+u8 getVbatCount=255;
+u8 curVBat;
 
 
 //函数定义--------------------------------
@@ -180,8 +182,21 @@ void refreshDisplay()
                     DisplayOff();
             }
         }else
-        {
-            DisplayBat(GetVBatAvg());
+        {            
+            if(isOtg==0 && curIBus>=15)
+            {
+                DisplayBat(255);
+            }            
+            else
+            {
+                getVbatCount--;
+                if(getVbatCount<200)
+                {
+                    getVbatCount=255;
+                    curVBat=GetVBatAvg();
+                }
+                DisplayBat(curVBat);
+            }                
             //放电才显示电流
             if(isOtg==1)
             {
@@ -372,7 +387,7 @@ void procClick()
         }else
         {
             diffTime=GetSysTick()-clickTime;
-            if(diffTime>1000)            
+            if(diffTime>200)            
                 addClickLong();            
         }
     }else if(BT_MIN==0)
@@ -385,7 +400,7 @@ void procClick()
         }else
         {
             diffTime=GetSysTick()-clickTime;
-            if(diffTime>1000)            
+            if(diffTime>200)            
                 minClickLong();            
         }
     }else
@@ -424,7 +439,7 @@ void checkSleep()
         
         if(isOtg==0 && isDisplay)
         {
-            if(curTime-clickTime > 600000)
+            if(curTime-clickTime > 300000)
             {
                 DisplayOff();
             }
@@ -439,7 +454,12 @@ void main()
     Delay_ms(100);  
 
     num=0;
-    DisplayBat(4);
+    curVBat=GetVBatAvg();
+    curVBat=GetVBatAvg();
+    curVBat=GetVBatAvg();
+    curVBat=GetVBatAvg();
+    curVBat=GetVBatAvg();
+    curVBat=GetVBatAvg();
     refreshTime=GetSysTick();
     refreshIBusTime=GetSysTick();
     while(1)

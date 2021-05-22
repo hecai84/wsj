@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-14 01:08:47
+ * @LastEditTime: 2021-05-22 18:42:51
  * @LastEditors: huzhenhong
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -252,11 +252,11 @@ u8 GetVBatAvg()
 
     if(temp<6600)
         return 0;
-    else if(temp<7000)
+    else if(temp<6900)
         return 1;
-    else if(temp<7400)
+    else if(temp<7100)
         return 2;
-    else if(temp<8000)
+    else if(temp<7300)
         return 3;
     else
         return 4;
@@ -280,7 +280,7 @@ u8 GetIBus()
             return A;
         }
     }
-    return 0;
+    return 0xff;
 }
 
 
@@ -295,14 +295,18 @@ u8 GetIBusAvg()
         iBusArr[i-1]=iBusArr[i];
     }
     iBusArr[IBUSARR_LEN-1]=GetIBus();
+    if(iBusArr[IBUSARR_LEN-1]==0xff)
+        iBusArr[IBUSARR_LEN-1]=iBusArr[IBUSARR_LEN-2];
     i=temp/IBUSARR_LEN;
-    if(isOtg==1)
-    {
-        if(i>emptyIBus)
-            i=i-emptyIBus;
-        else
-            i=0;
-    }
+    
+    return i;
+    // if(isOtg==1)
+    // {
+    //     if(i>emptyIBus)
+    //         i=i-emptyIBus;
+    //     else
+    //         i=0;
+    // }
 
 
     if(isOtg==1 && forcePow==0 && stableCount<10 && i>10)
