@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-22 18:59:17
+ * @LastEditTime: 2021-05-24 22:44:15
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
@@ -31,7 +31,7 @@ u8 test;
 u8 num;
 u8 readyResume=0;
 u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
-u8 curIBus;
+u16 curIBus;
 u32 clickTime;
 u32 refreshTime;
 u32 refreshIBusTime;
@@ -165,7 +165,7 @@ void refreshDisplay()
         if(isDisplay==0)
         {
             //关屏的时候充电显示电池图标，大于等于100ma的时候才算充电。
-            if(isOtg==0 && curIBus>=10)
+            if(isOtg==0 && curIBus>=20)
             {
                 if(tempDisplay==0)
                 {
@@ -183,7 +183,7 @@ void refreshDisplay()
             }
         }else
         {            
-            if(isOtg==0 && curIBus>=15)
+            if(isOtg==0 && curIBus>=20)
             {
                 DisplayBat(255);
             }            
