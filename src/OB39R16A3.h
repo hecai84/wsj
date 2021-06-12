@@ -1,9 +1,9 @@
 /*--------------------------------------------------------------------------
-Header file for OB38R08A1 microcontroller.
-Modify on 2017/03/01
+Copyright (c) SyncMOS Technologies International, Inc.
+All rights reserved.
 --------------------------------------------------------------------------*/
-#ifndef __OB38R08A1_H__
-#define __OB38R08A1_H__
+#ifndef __OB39R16A3_H__
+#define __OB39R16A3_H__
 
 /*  BYTE Registers  */
 sfr P0      = 0x80;
@@ -39,8 +39,7 @@ sfr IFCON   = 0x8F;    /*  X,CDPR,X,X,X,X,X,ISPE  */
 sfr TAKEY   = 0xF7;
 sfr ISPFAH  = 0xE1;
 sfr ISPFAL  = 0xE2;
-sfr ISPFDL  = 0xE3;
-sfr ISPFDH  = 0xEB;
+sfr ISPFD   = 0xE3;
 sfr ISPFC   = 0xE4;
 
 /*  Enhance UART control register  */
@@ -59,7 +58,6 @@ sfr IEN1    = 0xB8;
 sfr IP0     = 0xA9;
 sfr IP1     = 0xB9;
 sfr IRCON   = 0xC0;
-sfr INTDEG  = 0xEE;
 sfr ENHIT   = 0xE5;
 
 /*  KBI  */
@@ -82,8 +80,6 @@ sfr ADCC2   = 0xAC;
 sfr ADCDH   = 0xAD;
 sfr ADCDL   = 0xAE;
 sfr ADCCS   = 0xAF;
-sfr ADCSH   = 0xEF;
-#define ADCCAL (*((unsigned char volatile xdata*)0xFFFF))
 
 /*  PWM  */
 sfr PWMC    = 0xB5;
@@ -256,4 +252,4 @@ sbit IEPWM  = IEN1^0;
 #define d_Comparator_Vector 18  // 0093h
 
 #endif
-      
+    

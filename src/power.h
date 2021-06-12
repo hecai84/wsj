@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:57
- * @LastEditTime: 2021-05-24 22:40:34
- * @LastEditors: huzhenhong
+ * @LastEditTime: 2021-06-12 16:09:47
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\power.h
+ * @FilePath: \wsj\src\power.h
  */
 #ifndef __POWER_H__
 #define __POWER_H__
@@ -14,7 +14,7 @@ void init8812(void);
 void startPow(void);
 u16 GetIBus();
 u16 GetIBusAvg();
-u8 GetVBatAvg();
+u8 GetBatAvg();
 //u8 GetIBatAvg();
 void SetVolt(u8 v);
 u8 ReadCmd(u8 addr,u8 * dat);

@@ -1,4 +1,11 @@
-#include "OB38R08A1.h"
+/*
+ * @Description: 
+ * @Author: hecai
+ * @Date: 2021-06-07 17:57:47
+ * @LastEditTime: 2021-06-12 15:57:13
+ * @FilePath: \wsj\src\Timer.c
+ */
+#include "Tools.h"
 #include "Timer.h"
 
 #define TIMER0_VECTOR  1    //TIMER0 Interrupt Vevtor

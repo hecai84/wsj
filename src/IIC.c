@@ -1,12 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-04-02 00:46:37
- * @LastEditTime: 2021-05-14 21:05:14
- * @LastEditors: huzhenhong
+ * @LastEditTime: 2021-06-12 16:13:33
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\IIC.c
+ * @FilePath: \wsj\src\IIC.c
  */
-#include "OB38R08A1.h"
+#include "Tools.h"
 #include "IIC.h"
   
 #define scl P1_0

@@ -1,14 +1,6 @@
-/*
- * @Description: 
- * @Author: hecai
- * @Date: 2021-05-12 19:53:31
- * @LastEditors: huzhenhong
- * @LastEditTime: 2021-05-14 21:10:42
- * @FilePath: \WSJ\src\EEPROM.h
- */
 /*--------------------------------------------------------------------------
 Header file for EEPROM.
-Modify on 2017/03/08.
+Modify on 2015/10/26.
 --------------------------------------------------------------------------*/
 
 #ifndef __EEPROM_H__
@@ -16,25 +8,50 @@ Modify on 2017/03/08.
 
 // Example Code
 /*
-
-void main()
+#define test_len         64
+#define test_start_addr  0x3000
+void main(void)
 {
-    Write_EEPROM(0x05,0x33);
-    if(Read_EEPROM(0x05)==0x33)
+    unsigned int i;
+    unsigned char buf[test_len];
+
+    EEPROM_Page_Erase(test_start_addr);
+    EEPROM_Sector_Program(test_start_addr, test_start_addr+test_len-1, 0x55);
+    
+    for (i = 0; i < test_len; i++)
     {
-        ROM_2ByteProgram(0x1004,0x3322);
-        if(ROM_ByteRead(0x1004)==0x22)
-        {
-            ROM_1ByteProgram(0x1014,0x22);
-        }
+        buf[i] = EEPROM_Byte_Read(test_start_addr+i);
     }
-    while(1);
+    
+    for (i = 0; i < test_len; i++)
+    {
+        EEPROM_Byte_Modify(test_start_addr+i, i);
+    }
+            
+    for (i = 0; i < test_len; i++)
+    {
+        buf[i] = EEPROM_Byte_Read(test_start_addr+i);
+    }
+    
+    while(1)
+    {
+        Check_ISPFAH();
+        test();
+        
+    }
+
 }
 */
 
-void ISP_Enable(void);
-void ISP_Disable(void);
-void Write_EEPROM(unsigned char Addr, unsigned char Data);
-unsigned char Read_EEPROM(unsigned char Addr);
-
+void EEPROM_Enable(void);
+void EEPROM_Disable(void);
+void EEPROM_Byte_Program(unsigned int Addr, unsigned char Data);
+void EEPROM_Page_Erase(unsigned int Addr);        //128-Byte
+void EEPROM_Sector_Program(unsigned int Addr_start, unsigned int Addr_end, unsigned char Data);
+unsigned char EEPROM_Byte_Read(unsigned int Addr);
+//unsigned int EEPROM_Word_Read(unsigned int Addr);
+void EEPROM_Byte_Modify(unsigned int Addr, unsigned char Data);
+void Write_EEPROM(unsigned char forcePow,unsigned char volt);
+unsigned char Read_EEPROM_FORCEPOW();
+unsigned char Read_EEPROM_VOLT();
 #endif

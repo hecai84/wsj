@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-05-22 18:11:04
- * @LastEditors: huzhenhong
+ * @LastEditTime: 2021-06-12 19:14:26
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\oled.c
+ * @FilePath: \wsj\src\oled.c
  */
 #include "oled.h"
 #define SDA P0_5
@@ -39,7 +39,13 @@ void Send_ACK(void);
 
 
 static void somenop()  
-{;;}  
+{
+    u8 i;
+    for (i = 0; i < 5; i++)
+    {
+        ;
+    }
+}  
 
 
 

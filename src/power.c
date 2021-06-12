@@ -1,23 +1,24 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-05-24 22:40:00
- * @LastEditors: huzhenhong
+ * @LastEditTime: 2021-06-12 23:09:51
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\power.c
+ * @FilePath: \wsj\src\power.c
  */
 #include "power.h"
 #include "IIC.h"
 #include "EEPROM.h"
 #define CE P0_6
 #define PSTOP P0_7
-#define INT P1_6
+#define POWIN_CTRL P0_3
 #define M_CTRL P1_7
 #define IBUSARR_LEN 5
-#define VBATARR_LEN 5
 u8 idata I2cRecArr[10]={0};
 u16 idata iBusArr[IBUSARR_LEN]={0};
-u16 idata vBatArr[VBATARR_LEN]={0};
+u8 curVBat;
+u8 newVBat;
+u8 vBatCount=0;
 u8 curVolt;
 u8 isOtg=0;
 u8 forcePow=0;
@@ -27,7 +28,7 @@ u8 emptyIBus=0;
 
 u8 ReadCmd(u8 addr,u8 * dat);
 void setIBusLim(u8 v);
-
+u8 GetBat();
 
 void startPow(void)
 {
@@ -36,6 +37,7 @@ void startPow(void)
     stableIBus=0;
     stableCount=0;
     M_CTRL=0;
+    POWIN_CTRL=0;
     if(curVolt<100 && forcePow==1)
     {
         SetVolt(100);
@@ -56,7 +58,7 @@ void startPow(void)
     isOtg=1;
 
     //PSTOP=0;
-    Delay_ms(250);  
+    Delay_ms(50);  
     // for(i=0;i<1000;i++)
     // {
     //     M_CTRL=0;
@@ -84,6 +86,7 @@ void stopPow(void)
     WriteCmd(0x06,0x19);
     WriteCmd(0x09,0x06);
     isOtg=0;
+    POWIN_CTRL=1;
     M_CTRL=0;
     Delay_ms(100);  
 }
@@ -100,10 +103,12 @@ void init8812(void)
     P1M0=P1M0 | 0x80;
     // P0M0=P0M0 | 0xC4;
     M_CTRL=0;
-    forcePow=Read_EEPROM(6);
+    POWIN_CTRL=1;
+    
+    forcePow=Read_EEPROM_FORCEPOW();
     if(forcePow!=1)
         forcePow=0;
-    curVolt=Read_EEPROM(7);    
+    curVolt=Read_EEPROM_VOLT(); 
     Delay_ms(100);  
     if(curVolt>=30 && curVolt<=150)
         SetVolt(curVolt);
@@ -125,6 +130,17 @@ void init8812(void)
     Delay_ms(100);  
     isOtg=0;
     PSTOP=0;
+
+    
+    curVBat=GetBat();
+    Delay_ms(10); 
+    curVBat=GetBat();
+    Delay_ms(10); 
+    curVBat=GetBat();
+    Delay_ms(10); 
+    curVBat=GetBat();
+    Delay_ms(10); 
+    curVBat=GetBat();
 }
 
 void VoltAdd()
@@ -150,18 +166,15 @@ void VoltMin()
  */
 void setIBusLim(u8 v)
 {
-    u16 iLim;
     if(v<60)
     {
-        WriteCmd(0x05,0x95);
+        WriteCmd(0x05,0xA0);
     }else if(v<100)
     {
-        iLim=8534/v-1;
-        WriteCmd(0x05,iLim);
+        WriteCmd(0x05,0x70);
     }else
     {
-        iLim=7680/v-1;
-        WriteCmd(0x05,iLim);
+        WriteCmd(0x05,0x40);
     }
 }
 
@@ -225,44 +238,47 @@ void SetVoltTemp(u8 i)
  * @param {*}
  * @return {*}
  */
-u16 GetVBat()
+u8 GetBat()
 {
     u8 value1,value2;
-    u16 v=0;
+    u16 v;
     if(ReadCmd(0x0F,&value1))
     {
         if(ReadCmd(0x10,&value2))
         {
             v=value1;
-            v=(v*4+(value2>>6)+1)*10;      
+            v=(v*4+(value2>>8)+1)*10;
+            if(v<6800)
+                return 0;
+            else if(v<7200)
+                return 1;
+            else if(v<7400)
+                return 2;
+            else if(v<7800)
+                return 3;
+            else
+                return 4;
         }
     }
-    return v;
+    return 0;
 }
 
-u8 GetVBatAvg()
+u8 GetBatAvg()
 {
-    u8 i;
-    u16 temp=vBatArr[0];
-
-    for(i=1;i<VBATARR_LEN;i++)
+    u8 temp=GetBat();
+    if(newVBat!=curVBat && newVBat==temp)
     {
-        temp+=vBatArr[i];
-        vBatArr[i-1]=vBatArr[i];
+        vBatCount++;
+        if(vBatCount==255)
+        {
+            curVBat=newVBat;
+            vBatCount=0;
+        }
+    }else
+    {
+        vBatCount=0;
     }
-    vBatArr[VBATARR_LEN-1]=GetVBat();
-    temp=temp/VBATARR_LEN; 
-
-    if(temp<6600)
-        return 0;
-    else if(temp<6900)
-        return 1;
-    else if(temp<7100)
-        return 2;
-    else if(temp<7300)
-        return 3;
-    else
-        return 4;
+    return curVBat;
 }
 
 /**
@@ -328,47 +344,6 @@ u16 GetIBusAvg()
     //     SetVoltTemp(i);
     // return i;
 }
-
-
-// u8 GetIBat()
-// {
-//     u8 value1,value2;
-//     u16 A;
-//     if(ReadCmd(0x13,&value1))
-//     {
-//         if(ReadCmd(0x14,&value2))
-//         {
-//             A=value1;
-//             A=(A*4+(value2>>6)+1);
-//             return A;
-//         }
-//     }
-//     return 0;
-// }
-
-
-// u8 GetIBatAvg()
-// {
-//     u8 i;
-//     u16 temp=iBatArr[0];
-
-//     for(i=1;i<IBUSARR_LEN;i++)
-//     {
-//         temp+=iBatArr[i];
-//         iBatArr[i-1]=iBatArr[i];
-//     }
-//     iBatArr[IBUSARR_LEN-1]=GetIBat();
-//     i=temp/IBUSARR_LEN;
-//     if(isOtg==1)
-//     {
-//         if(i>emptyIBat)
-//             i=i-emptyIBat;
-//         else
-//             i=0;
-//     }
-        
-//     return i;
-// }
 
 
 
