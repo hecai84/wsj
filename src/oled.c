@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-06-12 19:14:26
+ * @LastEditTime: 2021-06-13 02:12:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.c
@@ -24,7 +24,6 @@ bit log = 0;
 #define Start_page 0x00
 
 u8 isDisplay;
-u8 tempDisplay=0;
 
 void Set_Page_Address(unsigned char add);
 void Set_Column_Address(unsigned char add);
@@ -39,13 +38,7 @@ void Send_ACK(void);
 
 
 static void somenop()  
-{
-    u8 i;
-    for (i = 0; i < 5; i++)
-    {
-        ;
-    }
-}  
+{;;}  
 
 
 
@@ -356,7 +349,6 @@ void DisplayOff()
     SentByte(0xae);
     Stop();
     isDisplay=0;
-    tempDisplay=0;
     Delay_ms(100);
 }
 void DisplayOn()

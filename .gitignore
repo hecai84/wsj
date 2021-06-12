@@ -12,3 +12,4 @@ wsj
 .vscode/keil-assistant.log
 .vscode/uv4.log.lock
 *.hex
+wsj.uvgui.hecai

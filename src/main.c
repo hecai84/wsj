@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-06-13 00:19:34
+ * @LastEditTime: 2021-06-13 03:00:00
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -25,6 +25,7 @@
 #define BT_ADD  P3_1
 #define BT_MIN   P0_0
 #define POW_INT P1_6
+#define POWIN_CTRL P0_3
 
 u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
 u16 curIBus;
@@ -34,7 +35,7 @@ u32 refreshIBusTime;
 extern u8 curVolt;
 extern u8 isOtg;
 extern u8 isDisplay;
-extern u8 tempDisplay;
+u8 tempDisplay;
 extern u8 forcePow;
 
 
@@ -59,6 +60,11 @@ void checkPowIn()
         {
             stopPow();
         }
+        POWIN_CTRL=1;
+        Delay_ms(100);
+    }else
+    {
+        POWIN_CTRL=0;
     }
 }
 
@@ -158,7 +164,8 @@ void init()
     init8812();
     DisplayChar_b(curVolt);
 
-    PCON=0;
+    
+    P0M0=P0M0 | 0x08;
     //KBI_Disable();
 }
 
@@ -190,29 +197,35 @@ void refreshDisplay()
     if(diffTime>300)
     {        
         refreshTime=GetSysTick();
-
+        curIBus=GetIBusAvg();
         if(isDisplay==0)
         {
             //关屏的时候充电显示电池图标，大于等于100ma的时候才算充电。
-            if(isOtg==0 && curIBus>=20)
+            if(POW_INT==1)
             {
                 if(tempDisplay==0)
                 {
-                    DisplayOn();
                     clear();
+                    DisplayOn();
                     isDisplay=0;  
                     tempDisplay=1; 
                 }             
-                DisplayBat(255);
+                if(curIBus>=20)
+                    DisplayBat(255);
+                else
+                    DisplayBat(4);
             }else
             {
-                //关屏充电，拔掉适配器之后重新关闭屏幕
+                //关屏充电，拔掉适配器之后重新关闭屏幕 
                 if(tempDisplay==1)
+                {
                     DisplayOff();
+                    tempDisplay=0;   
+                }           
             }
         }else
         {            
-            if(isOtg==0 && curIBus>=20)
+            if(POW_INT==1 && curIBus>=20)
             {
                 DisplayBat(255);
             }            
@@ -223,7 +236,7 @@ void refreshDisplay()
             //放电才显示电流
             if(isOtg==1)
             {
-                DisplayChar_s(GetIBusAvg());
+                DisplayChar_s(curIBus);
             }else
             {
                 DisplayChar_s(0);
@@ -248,6 +261,7 @@ void powClick()
     if(isOtg==1)
     {
         stopPow();
+        POWIN_CTRL=0;
     }
     else 
     {
@@ -266,13 +280,6 @@ void doubleAddMin()
     forcePow=~forcePow & 1;
     DisplayShan_s(forcePow);
     waitClickUp();
-}
-
-void doublePowAdd()
-{
-}
-void doublePowMin()
-{
 }
 
 
@@ -315,13 +322,6 @@ void powClickLong()
                     SystemStop();
                     return;
                 }
-                // else
-                // {
-                //     Delay_ms(1000);
-                //     if(BT_POW==0)
-                //         SystemResume();
-                //     break;
-                // }
             }   
         }
     }                 

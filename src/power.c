@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-06-12 23:09:51
+ * @LastEditTime: 2021-06-13 03:00:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -11,7 +11,6 @@
 #include "EEPROM.h"
 #define CE P0_6
 #define PSTOP P0_7
-#define POWIN_CTRL P0_3
 #define M_CTRL P1_7
 #define IBUSARR_LEN 5
 u8 idata I2cRecArr[10]={0};
@@ -37,7 +36,6 @@ void startPow(void)
     stableIBus=0;
     stableCount=0;
     M_CTRL=0;
-    POWIN_CTRL=0;
     if(curVolt<100 && forcePow==1)
     {
         SetVolt(100);
@@ -83,10 +81,9 @@ void startPow(void)
 void stopPow(void)
 {
     //PSTOP=1;    
-    WriteCmd(0x06,0x19);
+    WriteCmd(0x06,0x15);
     WriteCmd(0x09,0x06);
     isOtg=0;
-    POWIN_CTRL=1;
     M_CTRL=0;
     Delay_ms(100);  
 }
@@ -101,9 +98,7 @@ void init8812(void)
     PSTOP=1;
     CE=0;
     P1M0=P1M0 | 0x80;
-    // P0M0=P0M0 | 0xC4;
     M_CTRL=0;
-    POWIN_CTRL=1;
     
     forcePow=Read_EEPROM_FORCEPOW();
     if(forcePow!=1)
@@ -116,14 +111,14 @@ void init8812(void)
         SetVolt(50);
 
     WriteCmd(0x05,0x95);
-    WriteCmd(0x06,0x19);
+    WriteCmd(0x06,0x15);
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x06);
     WriteCmd(0x0a,0x01);
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
-    WriteCmd(0x00,0x09);
+    WriteCmd(0x00,0x0B);
 
 
     
@@ -276,6 +271,7 @@ u8 GetBatAvg()
         }
     }else
     {
+        newVBat=temp;
         vBatCount=0;
     }
     return curVBat;
