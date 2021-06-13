@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-06-13 03:00:10
+ * @LastEditTime: 2021-06-13 07:42:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -12,7 +12,7 @@
 #define CE P0_6
 #define PSTOP P0_7
 #define M_CTRL P1_7
-#define IBUSARR_LEN 5
+#define IBUSARR_LEN 20
 u8 idata I2cRecArr[10]={0};
 u16 idata iBusArr[IBUSARR_LEN]={0};
 u8 curVBat;
@@ -31,7 +31,7 @@ u8 GetBat();
 
 void startPow(void)
 {
-    u16 i;
+    u16 i,j;
     u8 tempVolt=curVolt;
     stableIBus=0;
     stableCount=0;
@@ -57,22 +57,20 @@ void startPow(void)
 
     //PSTOP=0;
     Delay_ms(50);  
-    // for(i=0;i<1000;i++)
-    // {
-    //     M_CTRL=0;
-    //     Delay_10us(1);    
-    //     M_CTRL=1;
-    //     Delay_10us(1);  
-    // }
+    if(tempVolt>100)
+    {
+        for(j=0;j<15;j++)
+        {
+            for(i=0;i<100;i++)
+            {
+                M_CTRL=0;
+                Delay_10us(15-j);    
+                M_CTRL=1;
+                Delay_10us(j);  
+            }
+        }
+    }
      
-    // for(i=0;i<1000;i++)
-    // {
-    //     M_CTRL=0;
-    //     Delay_10us(1);    
-    //     M_CTRL=1;        
-    //     Delay_10us(1); 
-    //     Delay_10us(1);  
-    // }
 
     M_CTRL=1;
     Delay_ms(100);
@@ -161,16 +159,16 @@ void VoltMin()
  */
 void setIBusLim(u8 v)
 {
-    if(v<60)
-    {
-        WriteCmd(0x05,0xA0);
-    }else if(v<100)
-    {
-        WriteCmd(0x05,0x70);
-    }else
-    {
-        WriteCmd(0x05,0x40);
-    }
+    // if(v<60)
+    // {
+    //     WriteCmd(0x05,0xA0);
+    // }else if(v<100)
+    // {
+    //     WriteCmd(0x05,0x70);
+    // }else
+    // {
+    //     WriteCmd(0x05,0x40);
+    // }
 }
 
 
@@ -188,7 +186,7 @@ void SetVolt(u8 v)
     {
         //FB_CTRL=1;
         WriteCmd(0x08,0x3A);
-        set1=v;    //(1+100/12)*8*10
+        set1=(v-102)/2+102;    //(1+100/12)*8*10
         set2=0;  //(1+100/12)*2*10
     }
     else
@@ -301,7 +299,7 @@ u16 GetIBus()
 
 u16 GetIBusAvg()
 {
-    u16 i;
+    u16 i,count,ibus;
     u16 temp=iBusArr[0];
 
     for(i=1;i<IBUSARR_LEN;i++)
@@ -312,9 +310,27 @@ u16 GetIBusAvg()
     iBusArr[IBUSARR_LEN-1]=GetIBus();
     if(iBusArr[IBUSARR_LEN-1]==0xffff)
         iBusArr[IBUSARR_LEN-1]=iBusArr[IBUSARR_LEN-2];
-    i=temp/IBUSARR_LEN;
+    ibus=temp/IBUSARR_LEN;
+
+    temp=0;
+    count=0;
+    for(i=0;i<IBUSARR_LEN;i++)
+    {
+        if(iBusArr[i]>=ibus)
+        {
+            temp+=iBusArr[i];
+        }else
+        {
+            if(count>=10)
+                temp+=iBusArr[i];
+            else
+                count++;
+        }
+    }
+    ibus=temp/(IBUSARR_LEN-count);
     
-    return i;
+
+    return ibus;
     // if(isOtg==1)
     // {
     //     if(i>emptyIBus)

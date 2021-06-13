@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-06-13 03:00:00
+ * @LastEditTime: 2021-06-13 15:04:14
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -12,6 +12,7 @@
 #include "Tools.h"
 #include "oled.h"
 #include "Timer.h"
+#include "WDT.h"
 
 
 #define KBI_VECTOR  11          //KBI Interrupt Vevtor
@@ -28,7 +29,7 @@
 #define POWIN_CTRL P0_3
 
 u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
-u16 curIBus;
+
 u32 clickTime;
 u32 refreshTime;
 u32 refreshIBusTime;
@@ -56,12 +57,20 @@ void checkPowIn()
 {
     if(POW_INT==1)
     {
-        if(isOtg==1)
-        {
-            stopPow();
+        Delay_ms(5);
+        if(POW_INT==1)
+        {        
+            Delay_ms(5);
+            if(POW_INT==1)
+            {
+                if(isOtg==1)
+                {
+                    stopPow();
+                }
+                POWIN_CTRL=1;
+                Delay_ms(100);
+            }
         }
-        POWIN_CTRL=1;
-        Delay_ms(100);
     }else
     {
         POWIN_CTRL=0;
@@ -138,9 +147,18 @@ void SystemResume()
 
 void init()
 {
+    EA    = 0;                      //Disable All Interrupt Function 
+    //看门狗初始化
+    if ((RSTS&0x08))            //Decision WDT Occur (WDTF=1)
+    {
+        RSTS = RSTS&0xF7;       //Clear WDTF (WDT Timer Reset Flag)
+        WDT_CountClear();       //Clear WDT Count Subroutine
+        WDT_Disable();
+        while(1);
+    }
+    WDT_initialize();           //Call WDT Initial Subroutine
     //定时器初始化
     TIMER0_initialize();   
-    EA    = 0;                      //Disable All Interrupt Function 
     TR0  = 1;
     TR1  = 1;
     //EX0 = 1;        //开启外部中断0
@@ -167,6 +185,9 @@ void init()
     
     P0M0=P0M0 | 0x08;
     //KBI_Disable();
+
+
+
 }
 
 
@@ -193,11 +214,14 @@ void KBI_ISR(void) interrupt KBI_VECTOR //KBI Interrupt Subroutine
 
 void refreshDisplay()
 {
+    u16 curIBus;
+    u8 curVBat;
     u32 diffTime=GetSysTick()-refreshTime;
     if(diffTime>300)
     {        
         refreshTime=GetSysTick();
         curIBus=GetIBusAvg();
+        curVBat=GetBatAvg();
         if(isDisplay==0)
         {
             //关屏的时候充电显示电池图标，大于等于100ma的时候才算充电。
@@ -225,13 +249,13 @@ void refreshDisplay()
             }
         }else
         {            
-            if(POW_INT==1 && curIBus>=20)
+            if(POW_INT==1 && curIBus>=20 && isOtg==0)
             {
                 DisplayBat(255);
             }            
             else
             {
-                DisplayBat(GetBatAvg());
+                DisplayBat(curVBat);
             }                
             //放电才显示电流
             if(isOtg==1)
@@ -461,7 +485,7 @@ void checkSleep()
 void main()
 {
     init();
-
+test();
     Delay_ms(100);  
 
     refreshTime=GetSysTick();
@@ -472,6 +496,7 @@ void main()
         checkSleep();
         procClick();
         refreshDisplay();
+        WDT_CountClear();
         //Delay_ms(100);
         // if(isRunning==0)
         // {
@@ -481,3 +506,4 @@ void main()
         //checkSleep();
     }
 }
+
