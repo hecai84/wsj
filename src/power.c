@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-06-13 07:42:47
+ * @LastEditTime: 2021-06-16 18:37:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -157,19 +157,19 @@ void VoltMin()
  * @param {u8} v
  * @return {*}
  */
-void setIBusLim(u8 v)
-{
-    // if(v<60)
-    // {
-    //     WriteCmd(0x05,0xA0);
-    // }else if(v<100)
-    // {
-    //     WriteCmd(0x05,0x70);
-    // }else
-    // {
-    //     WriteCmd(0x05,0x40);
-    // }
-}
+// void setIBusLim(u8 v)
+// {
+//     if(v<60)
+//     {
+//         WriteCmd(0x05,0xA0);
+//     }else if(v<100)
+//     {
+//         WriteCmd(0x05,0x70);
+//     }else
+//     {
+//         WriteCmd(0x05,0x40);
+//     }
+// }
 
 
 /**
@@ -181,7 +181,7 @@ void SetVolt(u8 v)
 {
     u8 set1,set2=0;
     curVolt=v;
-    setIBusLim(v);
+    //setIBusLim(v);
     if(v>102)
     {
         //FB_CTRL=1;
@@ -205,25 +205,25 @@ void SetVolt(u8 v)
  * @param {u8} i
  * @return {*}
  */
-void SetVoltTemp(u8 i)
-{
-    u8 temp;
-    u8 tempVolt=curVolt;
-    if(curVolt<90)
-    {
-        if(i<=stableIBus)
-        {
-            SetVolt(curVolt);
-        }else
-        {
-            temp=(i-stableIBus)*6/10+curVolt;
-            if(temp>90)
-                temp=90;
-            SetVolt(temp);
-            curVolt=tempVolt;
-        }
-    }
-}
+// void SetVoltTemp(u8 i)
+// {
+//     u8 temp;
+//     u8 tempVolt=curVolt;
+//     if(curVolt<90)
+//     {
+//         if(i<=stableIBus)
+//         {
+//             SetVolt(curVolt);
+//         }else
+//         {
+//             temp=(i-stableIBus)*6/10+curVolt;
+//             if(temp>90)
+//                 temp=90;
+//             SetVolt(temp);
+//             curVolt=tempVolt;
+//         }
+//     }
+// }
 
 
 /**

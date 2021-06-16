@@ -2,18 +2,26 @@
  * @Description: 
  * @Author: hecai
  * @Date: 2021-06-13 04:34:13
- * @LastEditTime: 2021-06-13 06:55:46
+ * @LastEditTime: 2021-06-16 18:50:46
  * @FilePath: \wsj\src\WDT.c
  */
 #include "OB39R16A3.h"
 #include "WDT.h"
 
-#define WDT_VECTOR  17          //WDT Interrupt Vevtor
 #define d_WDTE      1           //WDT Enable Bit
 #define d_WDTM      0x0A        //WDTM[3:0] WDT Clock Source Divider Bit (0~F)
 #define d_CWDTR     0        //if set 0: watchdog reset, set 1: watchdog interrupt
 #define d_IEWDT     0        //WDT interrupt enable if set 0: Disable WDT interrupt, set 1: Enable WDT interrupt
 
+
+void WDT_OFF()
+{
+    //WDTC  = (d_WDTM)|(d_WDTE<<5)|(1<<6);
+}
+void WDT_ON()
+{
+    //WDTC  = (d_WDTM)|(d_WDTE<<5)|(0<<6);
+}
 
 void WDT_initialize(void)    //Initialize WDT
 {
@@ -37,7 +45,4 @@ void WDT_Disable(void)
     WDTC  = 0x00;               //Disable WDT Function
 }
 
-// void WDT_ISR(void) interrupt WDT_VECTOR //WDT Interrupt Subroutine
-// {
-//     P0 = 0;                     //When Into interrupt subroutine WDTIF(IRCON2&0x02) will automatic clear 
-// }
+

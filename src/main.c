@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-06-13 15:04:14
+ * @LastEditTime: 2021-06-16 19:17:31
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -13,7 +13,6 @@
 #include "oled.h"
 #include "Timer.h"
 #include "WDT.h"
-
 
 #define KBI_VECTOR  11          //KBI Interrupt Vevtor
 #define d_KBLS      0x00        //KBI Low/High level detection selection (0~0x0F)
@@ -116,19 +115,22 @@ void SystemStop()
     DisplayOff();
     Delay_ms(1000);
     waitClickUp();
+    WDT_Disable();
     curBtPow=1;
     isRunning=0;
     //mcu休眠
-    PCON=3;
+    PCON=0x02;
 }
+
+
 /**
  * @description: 系统恢复
  * @param {*}
  * @return {*}
  */
 void SystemResume()
-{
-    //PCON=0;    
+{  
+    WDT_initialize();
     init8812();
     stopPow();
     DisplayOn();    
@@ -468,7 +470,7 @@ void checkSleep()
     if(isRunning==0)
     {
         if(BT_POW==1)
-            PCON=3;
+            PCON=0x02;
     }else
     {
         
@@ -485,7 +487,6 @@ void checkSleep()
 void main()
 {
     init();
-test();
     Delay_ms(100);  
 
     refreshTime=GetSysTick();
