@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-06-16 19:17:31
+ * @LastEditTime: 2021-06-18 16:15:09
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -223,7 +223,7 @@ void refreshDisplay()
     {        
         refreshTime=GetSysTick();
         curIBus=GetIBusAvg();
-        curVBat=GetBatAvg();
+        curVBat=GetBatAvg(0);
         if(isDisplay==0)
         {
             //关屏的时候充电显示电池图标，大于等于100ma的时候才算充电。
@@ -237,7 +237,10 @@ void refreshDisplay()
                     tempDisplay=1; 
                 }             
                 if(curIBus>=20)
+                {
                     DisplayBat(255);
+                    curVBat=GetBatAvg(1);
+                }
                 else
                     DisplayBat(4);
             }else
@@ -251,10 +254,11 @@ void refreshDisplay()
             }
         }else
         {            
-            if(POW_INT==1 && curIBus>=20 && isOtg==0)
+            if(POW_INT==1 && curIBus>=20 && isOtg==0)            
             {
                 DisplayBat(255);
-            }            
+                curVBat=GetBatAvg(1);
+            }        
             else
             {
                 DisplayBat(curVBat);

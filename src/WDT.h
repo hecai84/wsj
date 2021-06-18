@@ -18,6 +18,4 @@ Modify on 2018/01/09
 void WDT_initialize(void);
 void WDT_CountClear(void);
 void WDT_Disable(void);
-void WDT_ON();
-void WDT_OFF();
 #endif

@@ -14,14 +14,6 @@
 #define d_IEWDT     0        //WDT interrupt enable if set 0: Disable WDT interrupt, set 1: Enable WDT interrupt
 
 
-void WDT_OFF()
-{
-    //WDTC  = (d_WDTM)|(d_WDTE<<5)|(1<<6);
-}
-void WDT_ON()
-{
-    //WDTC  = (d_WDTM)|(d_WDTE<<5)|(0<<6);
-}
 
 void WDT_initialize(void)    //Initialize WDT
 {

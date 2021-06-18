@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-06-16 18:37:51
+ * @LastEditTime: 2021-06-18 16:12:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -256,9 +256,14 @@ u8 GetBat()
     return 0;
 }
 
-u8 GetBatAvg()
+u8 GetBatAvg(u8 update)
 {
     u8 temp=GetBat();
+    if(update==1)
+    {
+        curVBat=temp;
+        return curVBat;
+    }
     if(newVBat!=curVBat && newVBat==temp)
     {
         vBatCount++;
