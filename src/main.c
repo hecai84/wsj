@@ -3,8 +3,8 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-06-18 16:15:09
- * @FilePath: \wsj\src\main.c
+ * @LastEditTime: 2021-06-18 21:11:45
+ * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
 #include "EEPROM.h"
@@ -325,6 +325,7 @@ void powClickLong()
         {
             stopPow();
             DisplayOff();
+            tempDisplay=0;
             Write_EEPROM(forcePow,curVolt);
         }
         else
