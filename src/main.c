@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-06-18 21:11:45
+ * @LastEditTime: 2021-06-19 22:48:28
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
@@ -282,7 +282,7 @@ void waitClickUp()
 {
     while(BT_ADD==0 || BT_POW==0 || BT_MIN==0)
     {
-        ;
+        WDT_CountClear();
     }
 }
 
@@ -353,7 +353,9 @@ void powClickLong()
                     SystemStop();
                     return;
                 }
-            }   
+            }  
+            
+            WDT_CountClear();    
         }
     }                 
         
@@ -379,7 +381,8 @@ void minClickLong()
             doubleAddMin();
             waitClickUp();
         }
-        Delay_ms(50);          
+        Delay_ms(50);   
+        WDT_CountClear();       
     }
 }
 void addClick()
@@ -398,7 +401,8 @@ void addClickLong()
             doubleAddMin();
             waitClickUp();
         }
-        Delay_ms(50);          
+        Delay_ms(50);     
+        WDT_CountClear();        
     }
 }
 

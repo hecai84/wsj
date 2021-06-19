@@ -13,3 +13,4 @@ wsj
 .vscode/uv4.log.lock
 *.hex
 wsj.uvgui.hecai
+.vscode/c_cpp_properties.json
