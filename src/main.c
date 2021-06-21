@@ -3,8 +3,8 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-06-19 22:48:28
- * @FilePath: \WSJ\src\main.c
+ * @LastEditTime: 2021-06-21 16:37:03
+ * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
 #include "EEPROM.h"
@@ -243,6 +243,11 @@ void refreshDisplay()
                 }
                 else
                     DisplayBat(4);
+                //电源插入的时候不计算空闲时间
+                if(BT_MIN==1 && BT_ADD==1 && BT_POW==1)
+                {
+                    clickTime=GetSysTick();
+                } 
             }else
             {
                 //关屏充电，拔掉适配器之后重新关闭屏幕 
@@ -254,11 +259,19 @@ void refreshDisplay()
             }
         }else
         {            
-            if(POW_INT==1 && curIBus>=20 && isOtg==0)            
+            if(POW_INT==1)            
             {
-                DisplayBat(255);
-                curVBat=GetBatAvg(1);
-            }        
+                if(curIBus>=20 && isOtg==0)
+                {
+                    DisplayBat(255);
+                    curVBat=GetBatAvg(1);
+                }
+                //电源插入的时候不计算空闲时间
+                if(BT_MIN==1 && BT_ADD==1 && BT_POW==1)
+                {
+                    clickTime=GetSysTick();
+                }
+            }      
             else
             {
                 DisplayBat(curVBat);
@@ -439,7 +452,7 @@ void procClick()
         }else
         {
             diffTime=GetSysTick()-clickTime;
-            if(diffTime>200)            
+            if(diffTime>300)            
                 addClickLong();            
         }
     }else if(BT_MIN==0)
@@ -452,7 +465,7 @@ void procClick()
         }else
         {
             diffTime=GetSysTick()-clickTime;
-            if(diffTime>200)            
+            if(diffTime>300)            
                 minClickLong();            
         }
     }else
@@ -488,6 +501,13 @@ void checkSleep()
             if(curTime-clickTime > 1800000)
             {
                 DisplayOff();
+            }
+        }
+        if(isDisplay==0)
+        {
+            if(curTime-clickTime > 10800000)
+            {
+                SystemStop();
             }
         }
     }
