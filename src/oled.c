@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-07-01 11:16:50
+ * @LastEditTime: 2021-07-03 21:03:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \wsj\src\oled.c
+ * @FilePath: \WSJ\src\oled.c
  */
 #include "oled.h"
 #define SDA P0_5
@@ -259,7 +259,7 @@ void Set_Column_Address(unsigned char add)
 void Initial(void)
 {
 
-    Delay_ms(4000);
+    //Delay_ms(4000);
 
     write_i(0xae); //--turn off oled panel
 
@@ -274,20 +274,15 @@ void Initial(void)
     write_i(0xd3); //-set display offset
 
     write_i(0x00); //-not offset
-
-    write_i(0xad); //--Internal IREF Setting		***
-
-    write_i(0x30); //
+    
+    write_i(0x40); //--set start line address
 
     write_i(0x8d); //--set Charge Pump enable/disable
 
     write_i(0x14); //--set(0x10) disable
 
-    write_i(0x40); //--set start line address
-
-    write_i(0xa6); //--set normal display
-
-    write_i(0xa4); //Disable Entire Display On
+    write_i(0x20);
+    write_i(0x02);
 
     write_i(0xa1); //--set segment re-map
 
@@ -296,6 +291,9 @@ void Initial(void)
     write_i(0xda); //--set com pins hardware configuration
 
     write_i(0x12);
+
+    write_i(0xAD);
+    write_i(0x30);
 
     write_i(0x81); //--set contrast control register
 
@@ -309,6 +307,12 @@ void Initial(void)
 
     write_i(0x20);
 
+    write_i(0xa4);
+    write_i(0xa6);
+    write_i(0x0c);
+    write_i(0x11);
+    
+    clear();
     write_i(0xaf); //--turn on oled panel
     isDisplay = 1;
 }
@@ -328,8 +332,10 @@ void DisplayOn()
     write_i(0x8d); //--set Charge Pump enable/disable
 
     write_i(0x14); //--set(0x10) disable
+    
+    Initial();
 
-    write_i(0xaf);
+    //write_i(0xaf);
     isDisplay = 1;
     Delay_ms(100);
 }
@@ -337,16 +343,20 @@ void DisplayOn()
 void clear(void)
 {
     unsigned char i, j;
-    for (i = 0; i < 0x08; i++)
+    for (i = 0; i < 0x05; i++)
     {
         Set_Page_Address(i);
 
         Set_Column_Address(0x00);
 
-        for (j = 0; j < 128; j++)
+        // Start();
+        // SentByte(Write_Address);
+        // SentByte(0x40); 
+        for (j = 0; j < 72; j++)
         {
             write_d(0);
         }
+        //Stop();
     }
     return;
 }
@@ -363,6 +373,10 @@ void DisplayBat(u8 bat)
     {
         Set_Page_Address(i);
         Set_Column_Address(60);
+        
+        // Start();
+        // SentByte(Write_Address);
+        // SentByte(0x40); 
         if (bat == 0 && twinkBat < 2)
         {
             for (j = 0; j < 12; j++)
@@ -384,6 +398,7 @@ void DisplayBat(u8 bat)
                 write_d(picBat[bat][i * 12 + j]);
             }
         }
+        //Stop();
     }
 }
 
@@ -401,6 +416,10 @@ void DisplayChar_b(u8 num)
         Set_Page_Address(i);
         Set_Column_Address(0);
 
+
+        // Start();
+        // SentByte(Write_Address);
+        // SentByte(0x40); 
         offset = i * 12;
         //显示10位
         n = num / 100;
@@ -443,6 +462,7 @@ void DisplayChar_b(u8 num)
                 write_d(0);
             }
         }
+        //Stop();
     }
 }
 
@@ -454,6 +474,9 @@ void DisplayShan_s(u8 visable)
         Set_Page_Address(i + 3);
         Set_Column_Address(64);
 
+        // Start();
+        // SentByte(Write_Address);
+        // SentByte(0x40); 
         if (visable == 1)
         {
             for (j = 0; j < 8; j++)
@@ -468,6 +491,7 @@ void DisplayShan_s(u8 visable)
                 write_d(0);
             }
         }
+        //Stop();
     }
 }
 
@@ -486,7 +510,9 @@ void DisplayChar_s(u16 num)
         Set_Page_Address(i + 3);
         Set_Column_Address(0);
         
-
+        // Start();
+        // SentByte(Write_Address);
+        // SentByte(0x40); 
         offset = i * 8;
         //显示个位
         n = num / 100;
@@ -519,5 +545,6 @@ void DisplayChar_s(u16 num)
         {
             write_d(picA_s[offset + j]);
         }
+        //Stop();
     }
 }

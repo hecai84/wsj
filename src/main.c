@@ -3,8 +3,8 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-06-21 16:37:03
- * @FilePath: \wsj\src\main.c
+ * @LastEditTime: 2021-07-03 22:41:21
+ * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
 #include "EEPROM.h"
@@ -176,16 +176,20 @@ void init()
 
     EA   = 1;//中断开启
 
-    //屏幕初始化
-    Initial();
-    clear();
     
+    //0.3,0.4,0.5上拉
+    P0M0=P0M0 | 0x38;
+
     //8812初始化    
     init8812();
     DisplayChar_b(curVolt);
 
-    
-    P0M0=P0M0 | 0x08;
+    //屏幕初始化
+    Delay_ms(3000);
+    Initial();
+    clear();
+
+
     //KBI_Disable();
 
 
@@ -265,6 +269,9 @@ void refreshDisplay()
                 {
                     DisplayBat(255);
                     curVBat=GetBatAvg(1);
+                }else
+                {
+                    DisplayBat(4);
                 }
                 //电源插入的时候不计算空闲时间
                 if(BT_MIN==1 && BT_ADD==1 && BT_POW==1)
