@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-07-11 00:13:40
+ * @LastEditTime: 2021-07-11 14:26:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -12,12 +12,13 @@
 #define CE P0_6
 #define PSTOP P0_7
 #define M_CTRL P1_7
-#define IBUSARR_LEN 50
+#define IBUSARR_LEN 60
+#define UPDATE_BAT_COUNT 100
 u8 idata I2cRecArr[10]={0};
 u16 idata iBusArr[IBUSARR_LEN]={0};
 u8 curVBat;
 u8 newVBat;
-u8 vBatCount=0;
+u8 updateBatCount=0;
 u8 curVolt;
 u8 isOtg=0;
 u8 forcePow=0;
@@ -199,6 +200,8 @@ void SetVolt(u8 v)
     {
         //FB_CTRL=0;
         WriteCmd(0x08,0x3B);
+        if(v<40)
+            v=20+v/2;
         set1=v*5/2;    //(1+100/24)*8*10
         set2=0;  //(1+100/24)*2*10
     }    
@@ -272,16 +275,16 @@ u8 GetBatAvg(u8 update)
     }
     if(newVBat!=curVBat && newVBat==temp)
     {
-        vBatCount++;
-        if(vBatCount==255)
+        updateBatCount++;
+        if(updateBatCount>=UPDATE_BAT_COUNT)
         {
             curVBat=newVBat;
-            vBatCount=0;
+            updateBatCount=0;
         }
     }else
     {
         newVBat=temp;
-        vBatCount=0;
+        updateBatCount=0;
     }
     return curVBat;
 }
@@ -328,11 +331,11 @@ u16 GetIBusAvg()
     u16 i,j,ibus;
     u16 temp;
 
-    for(j=0;j<40;j++)
+    for(j=0;j<10;j++)
     {
         for(i=j+1;i<IBUSARR_LEN;i++)
         {
-            if(iBusArr[j]>iBusArr[i])
+            if(iBusArr[j]<iBusArr[i])
             {
                 temp=iBusArr[i];
                 iBusArr[i]=iBusArr[j];
@@ -341,14 +344,17 @@ u16 GetIBusAvg()
         }
     }
     temp=0;
-    for(i=40;i<IBUSARR_LEN;i++)
+    for(i=0;i<10;i++)
     {
         temp+=iBusArr[i];
     }
 
-    ibus=temp/(IBUSARR_LEN-40);
+    ibus=temp/10;
     if(isOtg==1)
-        return ibus-emptyIBus;
+        if(ibus>emptyIBus)
+            return ibus-emptyIBus;
+        else
+            return 0;
     else
         return ibus;
     //return ibus;
