@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-06-18 16:12:42
+ * @LastEditTime: 2021-07-11 00:13:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \wsj\src\power.c
+ * @FilePath: \WSJ\src\power.c
  */
 #include "power.h"
 #include "IIC.h"
@@ -12,7 +12,7 @@
 #define CE P0_6
 #define PSTOP P0_7
 #define M_CTRL P1_7
-#define IBUSARR_LEN 20
+#define IBUSARR_LEN 50
 u8 idata I2cRecArr[10]={0};
 u16 idata iBusArr[IBUSARR_LEN]={0};
 u8 curVBat;
@@ -24,6 +24,7 @@ u8 forcePow=0;
 u8 stableIBus=0;
 u8 stableCount=0;
 u8 emptyIBus=0;
+u8 ibuspos=0;
 
 u8 ReadCmd(u8 addr,u8 * dat);
 void setIBusLim(u8 v);
@@ -47,16 +48,20 @@ void startPow(void)
     WriteCmd(0x05,0xFF);
     WriteCmd(0x06,0xFF);
     WriteCmd(0x09,0x86);
+    
+    Delay_ms(30);
     isOtg=0;
-    for(i=0;i<30;i++)
+    for(i=0;i<IBUSARR_LEN;i++)
     {
-        emptyIBus=GetIBusAvg();
+        //emptyIBus=GetIBusAvg();
+        UpdateIBusArr();
+        Delay_10us(10);
     }
-
+    emptyIBus=GetIBusAvg();
     isOtg=1;
 
     //PSTOP=0;
-    Delay_ms(50);  
+    Delay_ms(30);  
     if(tempVolt>100)
     {
         for(j=0;j<15;j++)
@@ -113,10 +118,11 @@ void init8812(void)
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x06);
-    WriteCmd(0x0a,0x01);
+    WriteCmd(0x0a,0x81);
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
-    WriteCmd(0x00,0x0B);
+    WriteCmd(0x00,0x0B);    
+    WriteCmd(0x02,0x00);
 
 
     
@@ -289,61 +295,63 @@ u16 GetIBus()
 {
     u8 value1,value2;
     u16 A;
-    if(ReadCmd(0x11,&value1))
+    if(ReadCmd(0x13,&value1))
     {
-        if(ReadCmd(0x12,&value2))
+        if(ReadCmd(0x14,&value2))
         {
             A=value1;
-            A=(A*4+(value2>>6)+1);
+            A=(A*4+(value2>>6)+1)*2/3;
             return A;
         }
     }
     return 0xffff;
 }
 
+void UpdateIBusArr()
+{
+    iBusArr[ibuspos]=GetIBus();
+    if(iBusArr[ibuspos]==0xffff)
+    {
+        if(ibuspos>0)
+            iBusArr[ibuspos]=iBusArr[ibuspos-1];
+        else
+            iBusArr[ibuspos]=iBusArr[IBUSARR_LEN-1];
+    }
+    ibuspos++;
+    if(ibuspos>=IBUSARR_LEN)
+        ibuspos=0;
+}
+
 
 u16 GetIBusAvg()
 {
-    u16 i,count,ibus;
-    u16 temp=iBusArr[0];
+    u16 i,j,ibus;
+    u16 temp;
 
-    for(i=1;i<IBUSARR_LEN;i++)
+    for(j=0;j<40;j++)
     {
-        temp+=iBusArr[i];
-        iBusArr[i-1]=iBusArr[i];
-    }
-    iBusArr[IBUSARR_LEN-1]=GetIBus();
-    if(iBusArr[IBUSARR_LEN-1]==0xffff)
-        iBusArr[IBUSARR_LEN-1]=iBusArr[IBUSARR_LEN-2];
-    ibus=temp/IBUSARR_LEN;
-
-    temp=0;
-    count=0;
-    for(i=0;i<IBUSARR_LEN;i++)
-    {
-        if(iBusArr[i]>=ibus)
+        for(i=j+1;i<IBUSARR_LEN;i++)
         {
-            temp+=iBusArr[i];
-        }else
-        {
-            if(count>=10)
-                temp+=iBusArr[i];
-            else
-                count++;
+            if(iBusArr[j]>iBusArr[i])
+            {
+                temp=iBusArr[i];
+                iBusArr[i]=iBusArr[j];
+                iBusArr[j]=temp;
+            }
         }
     }
-    ibus=temp/(IBUSARR_LEN-count);
-    
+    temp=0;
+    for(i=40;i<IBUSARR_LEN;i++)
+    {
+        temp+=iBusArr[i];
+    }
 
-    return ibus;
-    // if(isOtg==1)
-    // {
-    //     if(i>emptyIBus)
-    //         i=i-emptyIBus;
-    //     else
-    //         i=0;
-    // }
-
+    ibus=temp/(IBUSARR_LEN-40);
+    if(isOtg==1)
+        return ibus-emptyIBus;
+    else
+        return ibus;
+    //return ibus;
 
     // if(isOtg==1 && forcePow==0 && stableCount<10 && i>10)
     // {        

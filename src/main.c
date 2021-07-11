@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-07-03 22:41:21
+ * @LastEditTime: 2021-07-10 23:06:30
  * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
@@ -217,13 +217,26 @@ void KBI_ISR(void) interrupt KBI_VECTOR //KBI Interrupt Subroutine
     ////KBIIF=0;            //Hardware Clear KBI Flag
 }
 
+void refreshIBus()
+{
+    u32 diffTime;
+    if(isOtg==1)
+    {
+        diffTime=GetSysTick()-refreshIBusTime;
+        if(diffTime>5)
+        {
+            refreshIBusTime=GetSysTick();
+            UpdateIBusArr();
+        }   
+    } 
+}
 
 void refreshDisplay()
 {
     u16 curIBus;
     u8 curVBat;
     u32 diffTime=GetSysTick()-refreshTime;
-    if(diffTime>300)
+    if(diffTime>250)
     {        
         refreshTime=GetSysTick();
         curIBus=GetIBusAvg();
@@ -532,6 +545,7 @@ void main()
         checkPowIn();
         checkSleep();
         procClick();
+        refreshIBus();
         refreshDisplay();
         WDT_CountClear();
         //Delay_ms(100);
