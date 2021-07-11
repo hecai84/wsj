@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-07-11 14:26:17
+ * @LastEditTime: 2021-07-11 19:53:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \WSJ\src\power.c
@@ -200,8 +200,8 @@ void SetVolt(u8 v)
     {
         //FB_CTRL=0;
         WriteCmd(0x08,0x3B);
-        if(v<40)
-            v=20+v/2;
+        if(v<35)
+            v=17+v/2;
         set1=v*5/2;    //(1+100/24)*8*10
         set2=0;  //(1+100/24)*2*10
     }    
