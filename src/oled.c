@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-07-21 18:31:25
+ * @LastEditTime: 2021-07-22 10:45:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.c
@@ -260,11 +260,11 @@ void Set_Column_Address(unsigned char add)
 
 void LcdPowerOff()
 {
-    LCD_EN=0;
+    LCD_EN=1;
 }
 void LcdPowerOn()
 {
-    LCD_EN=1;
+    LCD_EN=0;
     LCD_RES=0;
     Delay_ms(50);
     LCD_RES=1;   
@@ -344,9 +344,9 @@ void DisplayOff()
 void DisplayOn()
 {
     LcdPowerOn();
-    write_i(0x8d); //--set Charge Pump enable/disable
+    // write_i(0x8d); //--set Charge Pump enable/disable
 
-    write_i(0x14); //--set(0x10) disable
+    // write_i(0x14); //--set(0x10) disable
     
     Initial();
 

@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-07-21 18:32:26
+ * @LastEditTime: 2021-07-22 11:26:37
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -22,8 +22,8 @@
 #define d_KBIIE     0x01        //KBI Interrupt Enable bit
 
 #define BT_POW   P0_1
-#define BT_ADD  P0_0
-#define BT_MIN   P3_1
+#define BT_ADD  P3_1
+#define BT_MIN   P0_0
 #define POW_INT P0_2
 #define POWIN_CTRL P0_3
 
@@ -187,6 +187,7 @@ void init()
     
     //0.3,0.4,0.5上拉
     P0M0=P0M0 | 0x38;
+    POWIN_CTRL=0;
 
     //8812初始化    
     init8812();
@@ -338,7 +339,7 @@ void powClick()
     else 
     {
         //当前处于显示状态,且没有插入充电器
-        if(isDisplay==1 && POW_INT==0)
+        if(isDisplay==1 && POW_INT==1)
             startPow();
     }
 }

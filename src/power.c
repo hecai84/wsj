@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-07-11 19:53:35
+ * @LastEditTime: 2021-07-22 10:48:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\power.c
+ * @FilePath: \wsj\src\power.c
  */
 #include "power.h"
 #include "IIC.h"
@@ -85,7 +85,7 @@ void startPow(void)
 void stopPow(void)
 {
     //PSTOP=1;    
-    WriteCmd(0x06,0x15);
+    WriteCmd(0x06,0x3f);
     WriteCmd(0x09,0x06);
     isOtg=0;
     M_CTRL=0;
@@ -124,14 +124,11 @@ void init8812(void)
     WriteCmd(0x0c,0x22);
     WriteCmd(0x00,0x0B);    
     WriteCmd(0x02,0x00);
-
-
-    
+   
     Delay_ms(100);  
     isOtg=0;
     PSTOP=0;
 
-    
     curVBat=GetBat();
     Delay_ms(10); 
     curVBat=GetBat();
