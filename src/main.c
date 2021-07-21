@@ -3,8 +3,8 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-07-11 13:16:49
- * @FilePath: \WSJ\src\main.c
+ * @LastEditTime: 2021-07-21 18:32:26
+ * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
 #include "EEPROM.h"
@@ -16,15 +16,15 @@
 
 #define KBI_VECTOR  11          //KBI Interrupt Vevtor
 #define d_KBLS      0x00        //KBI Low/High level detection selection (0~0x0F)
-#define d_KBEX      0x02        //KBI Input Enable (0~0x0F)
+#define d_KBEX      0x06        //KBI Input Enable (0~0x0F)
 #define d_KBDEN     0x01        //KBI De-bounce Function Enable
 #define d_KBDS      0x00        //KBD[1:0] KBI De-bounce Time Selection (0~3)
 #define d_KBIIE     0x01        //KBI Interrupt Enable bit
 
 #define BT_POW   P0_1
-#define BT_ADD  P3_1
-#define BT_MIN   P0_0
-#define POW_INT P1_6
+#define BT_ADD  P0_0
+#define BT_MIN   P3_1
+#define POW_INT P0_2
 #define POWIN_CTRL P0_3
 
 u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
@@ -54,15 +54,23 @@ void waitClickUp();
  */
 void checkPowIn()
 {
-    if(POW_INT==1)
+    if(POW_INT==0)
     {
         Delay_ms(5);
-        if(POW_INT==1)
+        if(POW_INT==0)
         {        
             Delay_ms(5);
-            if(POW_INT==1)
+            if(POW_INT==0)
             {
-                if(isOtg==1)
+                if(isRunning==0)
+                {
+                    WDT_initialize();
+                    init8812();
+                    stopPow();
+                    waitClickUp();
+                    isRunning=1;
+                }
+                else if(isOtg==1)
                 {
                     stopPow();
                 }
@@ -185,7 +193,8 @@ void init()
     DisplayChar_b(curVolt);
 
     //屏幕初始化
-    Delay_ms(3000);
+    Delay_ms(2000);
+    LcdPowerOn();
     Initial();
     clear();
 
@@ -220,7 +229,7 @@ void KBI_ISR(void) interrupt KBI_VECTOR //KBI Interrupt Subroutine
 void refreshIBus()
 {
     u32 diffTime;
-    if(isOtg==1 || POW_INT==1)
+    if(isOtg==1 || POW_INT==0)
     {
         diffTime=GetSysTick()-refreshIBusTime;
         if(diffTime>50)
@@ -244,7 +253,7 @@ void refreshDisplay()
         if(isDisplay==0)
         {
             //关屏的时候充电显示电池图标，大于等于100ma的时候才算充电。
-            if(POW_INT==1)
+            if(POW_INT==0)
             {
                 if(tempDisplay==0)
                 {
@@ -276,7 +285,7 @@ void refreshDisplay()
             }
         }else
         {            
-            if(POW_INT==1)            
+            if(POW_INT==0)            
             {
                 if(curIBus>=20 && isOtg==0)
                 {
@@ -511,7 +520,7 @@ void checkSleep()
     u32 curTime=GetSysTick();
     if(isRunning==0)
     {
-        if(BT_POW==1)
+        if(BT_POW==1 && POW_INT==1)
             PCON=0x02;
     }else
     {

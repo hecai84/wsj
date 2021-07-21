@@ -1,20 +1,22 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-07-03 21:03:41
+ * @LastEditTime: 2021-07-21 18:31:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\oled.c
+ * @FilePath: \wsj\src\oled.c
  */
 #include "oled.h"
 #define SDA P0_5
 #define SCL P0_4
+#define LCD_EN P3_0
+#define LCD_RES P1_6
 
 #define uint unsigned int
 #define uchar unsigned char
 
 uchar Contrast_level = 0x8F;
-bit log = 0;
+//bit log = 0;
 
 #define Write_Address 0x78 /*slave addresses with write*/
 #define Read_Address 0x79  /*slave addresses with read*/
@@ -256,9 +258,20 @@ void Set_Column_Address(unsigned char add)
     return;
 }
 
+void LcdPowerOff()
+{
+    LCD_EN=0;
+}
+void LcdPowerOn()
+{
+    LCD_EN=1;
+    LCD_RES=0;
+    Delay_ms(50);
+    LCD_RES=1;   
+}
+
 void Initial(void)
 {
-
     //Delay_ms(4000);
 
     write_i(0xae); //--turn off oled panel
@@ -324,11 +337,13 @@ void DisplayOff()
 
     write_i(0x10); //--set(0x10) disable
 
+    LcdPowerOff();
     isDisplay = 0;
     Delay_ms(100);
 }
 void DisplayOn()
 {
+    LcdPowerOn();
     write_i(0x8d); //--set Charge Pump enable/disable
 
     write_i(0x14); //--set(0x10) disable

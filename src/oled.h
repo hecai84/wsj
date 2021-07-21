@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:35
- * @LastEditTime: 2021-05-09 17:10:49
+ * @LastEditTime: 2021-07-21 18:28:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\oled.h
+ * @FilePath: \wsj\src\oled.h
  */
 #ifndef __OLED_H__
 #define __OLED_H__
@@ -18,4 +18,6 @@ void DisplayChar_s(u16 num);
 void DisplayOn();
 void DisplayOff();
 void DisplayShan_s(u8 visable);
+void LcdPowerOff();
+void LcdPowerOn();
 #endif
