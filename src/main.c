@@ -3,8 +3,8 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-07-11 13:16:49
- * @FilePath: \WSJ\src\main.c
+ * @LastEditTime: 2021-07-23 16:17:01
+ * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
 #include "EEPROM.h"
@@ -379,7 +379,7 @@ void powClickLong()
         while(BT_POW==0)
         {
             diffTime=GetSysTick()-clickTime;
-            if(diffTime>5000)    
+            if(diffTime>3500)    
             {
                 if(isRunning==1)
                 {
