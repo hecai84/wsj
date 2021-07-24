@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-07-23 12:59:04
+ * @LastEditTime: 2021-07-24 17:10:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -48,7 +48,7 @@ void startPow(void)
     
     WriteCmd(0x05,0xFF);
     WriteCmd(0x06,0xFF);
-    WriteCmd(0x09,0x86);
+    WriteCmd(0x09,0x87);
     
     Delay_ms(30);
     isOtg=0;
@@ -86,7 +86,7 @@ void stopPow(void)
 {
     //PSTOP=1;    
     WriteCmd(0x06,0x3f);
-    WriteCmd(0x09,0x06);
+    WriteCmd(0x09,0x07);
     isOtg=0;
     M_CTRL=0;
     Delay_ms(100);  
@@ -118,7 +118,7 @@ void init8812(void)
     WriteCmd(0x06,0x3f);
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
-    WriteCmd(0x09,0x06);
+    WriteCmd(0x09,0x07);
     WriteCmd(0x0a,0x81);
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
