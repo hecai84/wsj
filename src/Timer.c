@@ -2,7 +2,7 @@
  * @Description: 
  * @Author: hecai
  * @Date: 2021-06-07 17:57:47
- * @LastEditTime: 2021-06-12 15:57:13
+ * @LastEditTime: 2021-07-23 19:26:01
  * @FilePath: \wsj\src\Timer.c
  */
 #include "Tools.h"
@@ -41,5 +41,7 @@ void TIMER0_ISR(void) interrupt TIMER0_VECTOR
 
 unsigned long GetSysTick()
 {
+    if(sysTick==0)
+        sysTick++;
     return sysTick;
 }

@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-07-22 11:26:37
+ * @LastEditTime: 2021-07-23 19:56:34
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -28,7 +28,7 @@
 #define POWIN_CTRL P0_3
 
 u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
-
+u32 chargeSleepTime=0;
 u32 clickTime;
 u32 refreshTime;
 u32 refreshIBusTime;
@@ -67,8 +67,9 @@ void checkPowIn()
                     WDT_initialize();
                     init8812();
                     stopPow();
-                    waitClickUp();
                     isRunning=1;
+                    //设置充电休眠时间
+                    chargeSleepTime=GetSysTick();
                 }
                 else if(isOtg==1)
                 {
@@ -106,7 +107,7 @@ void SystemStop()
     stop8812();
     //闪屏提醒
     DisplayOn();
-    Delay_ms(300);
+    Delay_ms(250);
     clear();
     Delay_ms(300);
     refreshDisplay();
@@ -121,7 +122,7 @@ void SystemStop()
     Delay_ms(300);
     clear();
     DisplayOff();
-    Delay_ms(1000);
+    Delay_ms(500);
     waitClickUp();
     WDT_Disable();
     curBtPow=1;
@@ -152,6 +153,7 @@ void SystemResume()
     refreshDisplay();
     waitClickUp();
     isRunning=1;
+    chargeSleepTime=0;
     curBtPow=1;
 }
 
@@ -389,7 +391,7 @@ void powClickLong()
         while(BT_POW==0)
         {
             diffTime=GetSysTick()-clickTime;
-            if(diffTime>5000)    
+            if(diffTime>3000)    
             {
                 if(isRunning==1)
                 {
@@ -522,8 +524,26 @@ void checkSleep()
     if(isRunning==0)
     {
         if(BT_POW==1 && POW_INT==1)
+        {            
+            WDT_Disable();
             PCON=0x02;
-    }else
+        }
+    }
+    else if(chargeSleepTime!=0)
+    {
+        //充电休眠时间不等于0的情况下,在充电则更新最后充电时间
+        if(POW_INT==0)
+            chargeSleepTime=GetSysTick();
+        else if(curTime-chargeSleepTime > 60000)
+        { 
+            //重新休眠
+            stop8812();
+            WDT_Disable();
+            PCON=0x02;
+            isRunning=0;
+        }
+    }
+    else
     {
         
         if(isOtg==0 && isDisplay)
@@ -558,13 +578,6 @@ void main()
         refreshIBus();
         refreshDisplay();
         WDT_CountClear();
-        //Delay_ms(100);
-        // if(isRunning==0)
-        // {
-        //     DisplayOn();
-        //     refreshDisplay();
-        // }
-        //checkSleep();
     }
 }
 
