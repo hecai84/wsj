@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-07-24 17:10:31
+ * @LastEditTime: 2021-08-19 10:59:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -187,13 +187,15 @@ void VoltMin()
 void SetVolt(u8 v)
 {
     u8 set1,set2=0;
+    u16 tempv;
     curVolt=v;
     //setIBusLim(v);
     if(v>102)
     {
         //FB_CTRL=1;
         WriteCmd(0x08,0x3A);
-        set1=(v-102)/2+102;    //(1+100/12)*8*10
+        tempv=(v-102)*9/10;
+        set1=tempv+102;    //(1+100/12)*8*10
         set2=0;  //(1+100/12)*2*10
     }
     else
