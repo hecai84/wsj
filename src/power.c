@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-08-19 16:23:22
+ * @LastEditTime: 2021-09-03 10:34:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -115,7 +115,7 @@ void init8812(void)
         SetVolt(50);
 
     WriteCmd(0x05,0x95);
-    WriteCmd(0x06,0x3f);
+    WriteCmd(0x06,0x26);
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x07);
@@ -267,9 +267,18 @@ u8 GetBat()
 u8 GetBatAvg(u8 update)
 {
     u8 temp=GetBat();
+    //强制更新电量
     if(update==1)
     {
         curVBat=temp;
+        newVBat=255;
+        return curVBat;
+    }
+    //强制更新电量的后一次也强制更新
+    if(newVBat==255)
+    {
+        curVBat=temp;
+        newVBat=temp;
         return curVBat;
     }
     if(newVBat!=curVBat && newVBat==temp)
