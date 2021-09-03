@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-07-22 10:45:47
+ * @LastEditTime: 2021-09-03 19:33:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.c
@@ -261,6 +261,8 @@ void Set_Column_Address(unsigned char add)
 void LcdPowerOff()
 {
     LCD_EN=1;
+    SDA=0;
+    SCL=0;
 }
 void LcdPowerOn()
 {
