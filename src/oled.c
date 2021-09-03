@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-07-03 21:03:41
+ * @LastEditTime: 2021-09-03 21:07:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\oled.c
+ * @FilePath: \wsj\src\oled.c
  */
 #include "oled.h"
 #define SDA P0_5
@@ -372,7 +372,7 @@ void DisplayBat(u8 bat)
     for (i = 0; i < 0x03; i++)
     {
         Set_Page_Address(i);
-        Set_Column_Address(60);
+        Set_Column_Address(55);
         
         // Start();
         // SentByte(Write_Address);
@@ -472,7 +472,7 @@ void DisplayShan_s(u8 visable)
     for (i = 0; i < 2; i++)
     {
         Set_Page_Address(i + 3);
-        Set_Column_Address(64);
+        Set_Column_Address(58);
 
         // Start();
         // SentByte(Write_Address);
