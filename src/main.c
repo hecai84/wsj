@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-07-23 16:17:01
+ * @LastEditTime: 2021-09-03 10:14:09
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -14,20 +14,25 @@
 #include "Timer.h"
 #include "WDT.h"
 
-#define KBI_VECTOR  11          //KBI Interrupt Vevtor
-#define d_KBLS      0x00        //KBI Low/High level detection selection (0~0x0F)
-#define d_KBEX      0x02        //KBI Input Enable (0~0x0F)
-#define d_KBDEN     0x01        //KBI De-bounce Function Enable
-#define d_KBDS      0x00        //KBD[1:0] KBI De-bounce Time Selection (0~3)
-#define d_KBIIE     0x01        //KBI Interrupt Enable bit
+#ifdef __VSCODE__
+#define interrupt
+#define KBI_VECTOR
+#else
+#define KBI_VECTOR 11 //KBI Interrupt Vevtor
+#endif
+#define d_KBLS 0x00   //KBI Low/High level detection selection (0~0x0F)
+#define d_KBEX 0x02   //KBI Input Enable (0~0x0F)
+#define d_KBDEN 0x01  //KBI De-bounce Function Enable
+#define d_KBDS 0x00   //KBD[1:0] KBI De-bounce Time Selection (0~3)
+#define d_KBIIE 0x01  //KBI Interrupt Enable bit
 
-#define BT_POW   P0_1
-#define BT_ADD  P3_1
-#define BT_MIN   P0_0
+#define BT_POW P0_1
+#define BT_ADD P3_1
+#define BT_MIN P0_0
 #define POW_INT P1_6
 #define POWIN_CTRL P0_3
 
-u8 isRunning=1,curBtPow=1,curBtMin=1,curBtAdd=1;
+u8 isRunning = 1, curBtPow = 1, curBtMin = 1, curBtAdd = 1;
 
 u32 clickTime;
 u32 refreshTime;
@@ -38,14 +43,11 @@ extern u8 isDisplay;
 u8 tempDisplay;
 extern u8 forcePow;
 
-
-
 //函数定义--------------------------------
 void refreshDisplay();
 void powClickLong();
 void waitClickUp();
 //---------------------------------------
-
 
 /**
  * @description: 检测充电电源插入
@@ -54,25 +56,27 @@ void waitClickUp();
  */
 void checkPowIn()
 {
-    if(POW_INT==1)
+    if (POW_INT == 1)
     {
         Delay_ms(5);
-        if(POW_INT==1)
-        {        
+        if (POW_INT == 1)
+        {
             Delay_ms(5);
-            if(POW_INT==1)
+            if (POW_INT == 1)
             {
-                if(isOtg==1)
+                if (isOtg == 1)
                 {
                     stopPow();
+                    init8812();
                 }
-                POWIN_CTRL=1;
+                POWIN_CTRL = 1;
                 Delay_ms(100);
             }
         }
-    }else
+    }
+    else
     {
-        POWIN_CTRL=0;
+        POWIN_CTRL = 0;
     }
 }
 
@@ -116,12 +120,11 @@ void SystemStop()
     Delay_ms(1000);
     waitClickUp();
     WDT_Disable();
-    curBtPow=1;
-    isRunning=0;
+    curBtPow = 1;
+    isRunning = 0;
     //mcu休眠
-    PCON=0x02;
+    PCON = 0x02;
 }
-
 
 /**
  * @description: 系统恢复
@@ -129,58 +132,56 @@ void SystemStop()
  * @return {*}
  */
 void SystemResume()
-{  
+{
     WDT_initialize();
     init8812();
     stopPow();
-    DisplayOn();    
-    refreshTime=0;
+    DisplayOn();
+    refreshTime = 0;
     refreshDisplay();
     Delay_ms(10);
-    refreshTime=0;
+    refreshTime = 0;
     refreshDisplay();
     Delay_ms(10);
-    refreshTime=0;
+    refreshTime = 0;
     refreshDisplay();
     waitClickUp();
-    isRunning=1;
-    curBtPow=1;
+    isRunning = 1;
+    curBtPow = 1;
 }
 
 void init()
 {
-    EA    = 0;                      //Disable All Interrupt Function 
+    EA = 0; //Disable All Interrupt Function
     //看门狗初始化
-    if ((RSTS&0x08))            //Decision WDT Occur (WDTF=1)
+    if ((RSTS & 0x08)) //Decision WDT Occur (WDTF=1)
     {
-        RSTS = RSTS&0xF7;       //Clear WDTF (WDT Timer Reset Flag)
-        WDT_CountClear();       //Clear WDT Count Subroutine
+        RSTS = RSTS & 0xF7; //Clear WDTF (WDT Timer Reset Flag)
+        WDT_CountClear();   //Clear WDT Count Subroutine
         WDT_Disable();
-        while(1);
+        while (1)
+            ;
     }
-    WDT_initialize();           //Call WDT Initial Subroutine
+    WDT_initialize(); //Call WDT Initial Subroutine
     //定时器初始化
-    TIMER0_initialize();   
-    TR0  = 1;
-    TR1  = 1;
+    TIMER0_initialize();
+    TR0 = 1;
+    TR1 = 1;
     //EX0 = 1;        //开启外部中断0
     //IT0 = 1;                //设置外部中断0触发模式:下降沿触发
 
-
     //Initialize KBI
-    IEKBI = (d_KBIIE);              //Enable KBI Interrupt Function
-    KBD   = (d_KBDEN<<7)|(d_KBDS);  //Enable KBI De-bounce and Select De-bounce Time Function
-    KBLS  = (d_KBLS);               //KBI Input High/Low Level Select
-    KBE   = (d_KBEX);               //KBI Input Channel Enable
+    IEKBI = (d_KBIIE);               //Enable KBI Interrupt Function
+    KBD = (d_KBDEN << 7) | (d_KBDS); //Enable KBI De-bounce and Select De-bounce Time Function
+    KBLS = (d_KBLS);                 //KBI Input High/Low Level Select
+    KBE = (d_KBEX);                  //KBI Input Channel Enable
 
+    EA = 1; //中断开启
 
-    EA   = 1;//中断开启
-
-    
     //0.3,0.4,0.5上拉
-    P0M0=P0M0 | 0x38;
+    P0M0 = P0M0 | 0x38;
 
-    //8812初始化    
+    //8812初始化
     init8812();
     DisplayChar_b(curVolt);
 
@@ -189,122 +190,126 @@ void init()
     Initial();
     clear();
 
-
     //KBI_Disable();
-
-
-
 }
-
 
 void KBI_ISR(void) interrupt KBI_VECTOR //KBI Interrupt Subroutine
 {
-    switch(KBF)         //Decision Occur Channel Flag (KBF)
+    switch (KBF) //Decision Occur Channel Flag (KBF)
     {
-    case 0x08:          //KBI Channel 3 Occur Interrupt(KBF3)
+    case 0x08: //KBI Channel 3 Occur Interrupt(KBF3)
         break;
-        
-    case 0x04:          //KBI Channel 2 Occur Interrupt(KBF2)
+
+    case 0x04: //KBI Channel 2 Occur Interrupt(KBF2)
         break;
-    
-    case 0x02:          //KBI Channel 1 Occur Interrupt(KBF1)
+
+    case 0x02: //KBI Channel 1 Occur Interrupt(KBF1)
         break;
-        
-    case 0x01:          //KBI Channel 0 Occur Interrupt(KBF0)
+
+    case 0x01: //KBI Channel 0 Occur Interrupt(KBF0)
         break;
-    } 
-    KBF=0;
+    }
+    KBF = 0;
     ////KBIIF=0;            //Hardware Clear KBI Flag
 }
 
 void refreshIBus()
 {
     u32 diffTime;
-    if(isOtg==1 || POW_INT==1)
+    if (isOtg == 1 || POW_INT == 1)
     {
-        diffTime=GetSysTick()-refreshIBusTime;
-        if(diffTime>50)
+        diffTime = GetSysTick() - refreshIBusTime;
+        if (diffTime > 50)
         {
-            refreshIBusTime=GetSysTick();
+            refreshIBusTime = GetSysTick();
             UpdateIBusArr();
-        }   
-    } 
+        }
+    }
 }
 
 void refreshDisplay()
 {
     u16 curIBus;
     u8 curVBat;
-    u32 diffTime=GetSysTick()-refreshTime;
-    if(diffTime>500)
-    {        
-        refreshTime=GetSysTick();
-        curIBus=GetIBusAvg();
-        curVBat=GetBatAvg(0);
-        if(isDisplay==0)
+    u32 diffTime = GetSysTick() - refreshTime;
+    if (diffTime > 500)
+    {
+        refreshTime = GetSysTick();
+        curIBus = GetIBusAvg();
+        curVBat = GetBatAvg(0);
+        if (isDisplay == 0)
         {
             //关屏的时候充电显示电池图标，大于等于100ma的时候才算充电。
-            if(POW_INT==1)
+            if (POW_INT == 1)
             {
-                if(tempDisplay==0)
+                if (tempDisplay == 0)
                 {
                     clear();
                     DisplayOn();
-                    isDisplay=0;  
-                    tempDisplay=1; 
-                }             
-                if(curIBus>=20)
+                    isDisplay = 0;
+                    tempDisplay = 1;
+                    init8812();
+                }
+                if (curIBus >= 20)
                 {
                     DisplayBat(255);
-                    curVBat=GetBatAvg(1);
+                    curVBat = GetBatAvg(1);
                 }
                 else
                     DisplayBat(4);
-                //电源插入的时候不计算空闲时间
-                if(BT_MIN==1 && BT_ADD==1 && BT_POW==1)
+                //关屏幕电源插入的时候不计算空闲时间
+                if (BT_MIN == 1 && BT_ADD == 1 && BT_POW == 1)
                 {
-                    clickTime=GetSysTick();
-                } 
-            }else
+                    //不及时更新,以保留长按操作
+                    if (GetSysTick() - clickTime > 60000)
+                        clickTime = GetSysTick();
+                }
+            }
+            else
             {
-                //关屏充电，拔掉适配器之后重新关闭屏幕 
-                if(tempDisplay==1)
+                //关屏充电，拔掉适配器之后重新关闭屏幕
+                if (tempDisplay == 1)
                 {
                     DisplayOff();
-                    tempDisplay=0;   
-                }           
+                    tempDisplay = 0;
+                }
             }
-        }else
-        {            
-            if(POW_INT==1)            
+        }
+        else
+        {
+            if (POW_INT == 1)
             {
-                if(curIBus>=20 && isOtg==0)
+                if (curIBus >= 20 && isOtg == 0)
                 {
                     DisplayBat(255);
-                    curVBat=GetBatAvg(1);
-                }else
+                    curVBat = GetBatAvg(1);
+                }
+                else
                 {
                     DisplayBat(4);
                 }
                 //电源插入的时候不计算空闲时间
-                if(BT_MIN==1 && BT_ADD==1 && BT_POW==1)
+                if (BT_MIN == 1 && BT_ADD == 1 && BT_POW == 1)
                 {
-                    clickTime=GetSysTick();
+                    //不及时更新,以保留长按操作
+                    if (GetSysTick() - clickTime > 60000)
+                        clickTime = GetSysTick();
                 }
-            }      
+            }
             else
             {
                 DisplayBat(curVBat);
-            }                
+            }
             //放电才显示电流
-            if(isOtg==1)
+            if (isOtg == 1)
             {
                 DisplayChar_s(curIBus);
-            }else
+            }
+            else
             {
                 DisplayChar_s(0);
             }
-            
+
             DisplayChar_b(curVolt);
             DisplayShan_s(forcePow);
         }
@@ -313,7 +318,7 @@ void refreshDisplay()
 
 void waitClickUp()
 {
-    while(BT_ADD==0 || BT_POW==0 || BT_MIN==0)
+    while (BT_ADD == 0 || BT_POW == 0 || BT_MIN == 0)
     {
         WDT_CountClear();
     }
@@ -321,15 +326,15 @@ void waitClickUp()
 
 void powClick()
 {
-    if(isOtg==1)
+    if (isOtg == 1)
     {
         stopPow();
-        POWIN_CTRL=0;
+        POWIN_CTRL = 0;
     }
-    else 
+    else
     {
         //当前处于显示状态,且没有插入充电器
-        if(isDisplay==1 && POW_INT==0)
+        if (isDisplay == 1 && POW_INT == 0)
             startPow();
     }
 }
@@ -340,63 +345,72 @@ void powClick()
  */
 void doubleAddMin()
 {
-    forcePow=~forcePow & 1;
+    forcePow = ~forcePow & 1;
     DisplayShan_s(forcePow);
     waitClickUp();
 }
 
-
 void powClickLong()
 {
-    u32 diffTime;  
+    u32 diffTime;
 
-    if(isRunning==0)
+    if (isRunning == 0)
     {
         SystemResume();
-    }else{
-        if(isDisplay)
+    }
+    else
+    {
+        if (isDisplay)
         {
             stopPow();
+            init8812();
             DisplayOff();
-            tempDisplay=0;
-            Write_EEPROM(forcePow,curVolt);
+            tempDisplay = 0;
+            Write_EEPROM(forcePow, curVolt);
         }
         else
         {
             stopPow();
+            init8812();
             DisplayOn();
-            refreshTime=0;
+            refreshTime = 0;
             refreshDisplay();
-            refreshTime=0;
+            refreshTime = 0;
             refreshDisplay();
-            refreshTime=0;
+            refreshTime = 0;
             refreshDisplay();
-            refreshTime=0;
+            refreshTime = 0;
             refreshDisplay();
-            refreshTime=0;
+            refreshTime = 0;
             refreshDisplay();
         }
-        while(BT_POW==0)
+        //没有充电的时候才处理休眠
+        if (POW_INT == 0)
         {
-            diffTime=GetSysTick()-clickTime;
-            if(diffTime>3500)    
+            Delay_ms(5);
+            if (POW_INT == 0)
             {
-                if(isRunning==1)
+                while (BT_POW == 0)
                 {
-                    SystemStop();
-                    return;
+                    diffTime = GetSysTick() - clickTime;
+                    if (diffTime > 3500)
+                    {
+                        if (isRunning == 1)
+                        {
+                            SystemStop();
+                            return;
+                        }
+                    }
+
+                    WDT_CountClear();
                 }
-            }  
-            
-            WDT_CountClear();    
+            }
         }
-    }                 
-        
-    curBtPow=1;       
+    }
+
+    curBtPow = 1;
     waitClickUp();
-
 }
-
 
 void minClick()
 {
@@ -405,17 +419,17 @@ void minClick()
 }
 void minClickLong()
 {
-    while(BT_MIN==0)
+    while (BT_MIN == 0)
     {
         VoltMin();
         DisplayChar_b(curVolt);
-        if(BT_ADD==0)
+        if (BT_ADD == 0)
         {
             doubleAddMin();
             waitClickUp();
         }
-        Delay_ms(50);   
-        WDT_CountClear();       
+        Delay_ms(50);
+        WDT_CountClear();
     }
 }
 void addClick()
@@ -424,21 +438,20 @@ void addClick()
     DisplayChar_b(curVolt);
 }
 void addClickLong()
-{        
-    while(BT_ADD==0)
+{
+    while (BT_ADD == 0)
     {
         VoltAdd();
         DisplayChar_b(curVolt);
-        if(BT_MIN==0)
+        if (BT_MIN == 0)
         {
             doubleAddMin();
             waitClickUp();
         }
-        Delay_ms(50);     
-        WDT_CountClear();        
+        Delay_ms(50);
+        WDT_CountClear();
     }
 }
-
 
 /**
  * @description: 处理按键
@@ -448,56 +461,62 @@ void addClickLong()
 void procClick()
 {
     u32 diffTime;
-    if(BT_POW==0)
+    if (BT_POW == 0)
     {
-        if(curBtPow==1)
+        if (curBtPow == 1)
         {
-            curBtPow=0;
-            clickTime=GetSysTick();
-        }else
+            curBtPow = 0;
+            clickTime = GetSysTick();
+        }
+        else
         {
-            diffTime=GetSysTick()-clickTime;
-            if(diffTime>1000)
+            diffTime = GetSysTick() - clickTime;
+            if (diffTime > 1000)
             {
                 powClickLong();
             }
         }
-    }else if(BT_ADD==0)
+    }
+    else if (BT_ADD == 0)
     {
-        if(curBtAdd==1)
+        if (curBtAdd == 1)
         {
-            curBtAdd=0;
+            curBtAdd = 0;
             addClick();
-            clickTime=GetSysTick();
-        }else
-        {
-            diffTime=GetSysTick()-clickTime;
-            if(diffTime>300)            
-                addClickLong();            
+            clickTime = GetSysTick();
         }
-    }else if(BT_MIN==0)
+        else
+        {
+            diffTime = GetSysTick() - clickTime;
+            if (diffTime > 300)
+                addClickLong();
+        }
+    }
+    else if (BT_MIN == 0)
     {
-        if(curBtMin==1)
+        if (curBtMin == 1)
         {
-            curBtMin=0;
+            curBtMin = 0;
             minClick();
-            clickTime=GetSysTick();
-        }else
-        {
-            diffTime=GetSysTick()-clickTime;
-            if(diffTime>300)            
-                minClickLong();            
+            clickTime = GetSysTick();
         }
-    }else
+        else
+        {
+            diffTime = GetSysTick() - clickTime;
+            if (diffTime > 300)
+                minClickLong();
+        }
+    }
+    else
     {
         //释放的时候才触发电源按钮
-        if(curBtPow==0)
+        if (curBtPow == 0)
         {
             powClick();
         }
-        curBtPow=1;
-        curBtMin=1;
-        curBtAdd=1;
+        curBtPow = 1;
+        curBtMin = 1;
+        curBtAdd = 1;
     }
 }
 
@@ -508,24 +527,25 @@ void procClick()
  */
 void checkSleep()
 {
-    u32 curTime=GetSysTick();
-    if(isRunning==0)
+    u32 curTime = GetSysTick();
+    if (isRunning == 0)
     {
-        if(BT_POW==1)
-            PCON=0x02;
-    }else
+        if (BT_POW == 1)
+            PCON = 0x02;
+    }
+    else
     {
-        
-        if(isOtg==0 && isDisplay)
+
+        if (isOtg == 0 && isDisplay)
         {
-            if(curTime-clickTime > 1800000)
+            if (curTime - clickTime > 1800000)
             {
                 DisplayOff();
             }
         }
-        if(isDisplay==0)
+        if (isDisplay == 0)
         {
-            if(curTime-clickTime > 10800000)
+            if (curTime - clickTime > 10800000)
             {
                 SystemStop();
             }
@@ -536,12 +556,12 @@ void checkSleep()
 void main()
 {
     init();
-    Delay_ms(100);  
+    Delay_ms(100);
 
-    refreshTime=GetSysTick();
-    refreshIBusTime=GetSysTick();
-    while(1)
-    {         
+    refreshTime = GetSysTick();
+    refreshIBusTime = GetSysTick();
+    while (1)
+    {
         checkPowIn();
         checkSleep();
         procClick();
@@ -557,4 +577,3 @@ void main()
         //checkSleep();
     }
 }
-
