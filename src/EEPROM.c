@@ -89,8 +89,8 @@ void Write_EEPROM(unsigned char forcePow,unsigned char volt)
 {
     //Check_ISPFAH();
     EEPROM_Page_Erase(start_addr);                            // erase page 
-    EEPROM_Byte_Program((start_addr&0xFF00)+1, forcePow);
-    EEPROM_Byte_Program((start_addr&0xFF00)+2, volt);
+    EEPROM_Byte_Program(start_addr+1, forcePow);
+    EEPROM_Byte_Program(start_addr+2, volt);
 }
 unsigned char Read_EEPROM_FORCEPOW()
 {

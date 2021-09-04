@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-09-03 09:59:48
+ * @LastEditTime: 2021-09-04 15:32:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -19,7 +19,7 @@ u16 idata iBusArr[IBUSARR_LEN]={0};
 u8 curVBat;
 u8 newVBat;
 u8 updateBatCount=0;
-u8 curVolt;
+u8 curVolt=50;
 u8 isOtg=0;
 u8 forcePow=0;
 u8 stableIBus=0;
@@ -107,7 +107,7 @@ void init8812(void)
     forcePow=Read_EEPROM_FORCEPOW();
     if(forcePow!=1)
         forcePow=0;
-    curVolt=Read_EEPROM_VOLT(); 
+    curVolt=Read_EEPROM_VOLT();
     Delay_ms(100);  
     if(curVolt>=30 && curVolt<=150)
         SetVolt(curVolt);

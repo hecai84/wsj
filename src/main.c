@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-09-03 10:14:09
+ * @LastEditTime: 2021-09-04 15:54:01
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -363,10 +363,10 @@ void powClickLong()
         if (isDisplay)
         {
             stopPow();
-            init8812();
             DisplayOff();
             tempDisplay = 0;
             Write_EEPROM(forcePow, curVolt);
+            init8812();
         }
         else
         {

@@ -14,3 +14,4 @@ wsj
 *.hex
 wsj.uvgui.hecai
 .vscode/c_cpp_properties.json
+.vscode/
