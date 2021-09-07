@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-09-04 15:32:20
+ * @LastEditTime: 2021-09-06 21:54:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -38,6 +38,27 @@ void startPow(void)
     stableIBus=0;
     stableCount=0;
     M_CTRL=0;
+
+    SetVolt(tempVolt);
+
+    WriteCmd(0x05,0xFF);
+    WriteCmd(0x06,0xFF);
+    WriteCmd(0x09,0x87);
+    
+    Delay_ms(30);
+    isOtg=0;
+    //获取空载电流
+    // for(i=0;i<IBUSARR_LEN;i++)
+    // {
+    //     //emptyIBus=GetIBusAvg();
+    //     UpdateIBusArr();
+    //     Delay_10us(5);
+    // }
+    UpdateIBusArr();
+    //emptyIBus=GetIBusAvg();
+    emptyIBus=3;
+
+    //设置是否强起
     if(curVolt<100 && forcePow==1)
     {
         SetVolt(100);
@@ -45,20 +66,8 @@ void startPow(void)
     {
         SetVolt(tempVolt);
     }
-    
-    WriteCmd(0x05,0xFF);
-    WriteCmd(0x06,0xFF);
-    WriteCmd(0x09,0x87);
-    
-    Delay_ms(30);
-    isOtg=0;
-    for(i=0;i<IBUSARR_LEN;i++)
-    {
-        //emptyIBus=GetIBusAvg();
-        UpdateIBusArr();
-        Delay_10us(10);
-    }
-    emptyIBus=GetIBusAvg();
+
+
     isOtg=1;
 
     //PSTOP=0;
@@ -97,13 +106,8 @@ void stop8812(void)
     PSTOP=1;
 }
 
-void init8812(void)
+void loadConfig(void)
 {
-    PSTOP=1;
-    CE=0;
-    P1M0=P1M0 | 0x80;
-    M_CTRL=0;
-    
     forcePow=Read_EEPROM_FORCEPOW();
     if(forcePow!=1)
         forcePow=0;
@@ -113,6 +117,16 @@ void init8812(void)
         SetVolt(curVolt);
     else
         SetVolt(50);
+}
+
+void init8812(void)
+{
+    PSTOP=1;
+    CE=0;
+    P1M0=P1M0 | 0x80;
+    M_CTRL=0;
+    
+
 
     WriteCmd(0x05,0x95);
     WriteCmd(0x06,0x26);
@@ -333,7 +347,8 @@ void UpdateIBusArr()
     }
     ibuspos++;
     if(ibuspos>=IBUSARR_LEN)
-        ibuspos=0;
+        ibuspos=0;        
+    
 }
 
 

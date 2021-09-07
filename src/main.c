@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-09-04 15:54:01
+ * @LastEditTime: 2021-09-07 10:09:02
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -14,12 +14,6 @@
 #include "Timer.h"
 #include "WDT.h"
 
-#ifdef __VSCODE__
-#define interrupt
-#define KBI_VECTOR
-#else
-#define KBI_VECTOR 11 //KBI Interrupt Vevtor
-#endif
 #define d_KBLS 0x00   //KBI Low/High level detection selection (0~0x0F)
 #define d_KBEX 0x02   //KBI Input Enable (0~0x0F)
 #define d_KBDEN 0x01  //KBI De-bounce Function Enable
@@ -182,6 +176,7 @@ void init()
     P0M0 = P0M0 | 0x38;
 
     //8812初始化
+    loadConfig();
     init8812();
     DisplayChar_b(curVolt);
 
@@ -219,7 +214,7 @@ void refreshIBus()
     if (isOtg == 1 || POW_INT == 1)
     {
         diffTime = GetSysTick() - refreshIBusTime;
-        if (diffTime > 50)
+        if (diffTime > 20)
         {
             refreshIBusTime = GetSysTick();
             UpdateIBusArr();

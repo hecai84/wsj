@@ -1,15 +1,16 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:57
- * @LastEditTime: 2021-07-10 22:59:35
+ * @LastEditTime: 2021-09-06 15:19:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\power.h
+ * @FilePath: \wsj\src\power.h
  */
 #ifndef __POWER_H__
 #define __POWER_H__
 #include "Tools.h"
 void stop8812(void);
+void loadConfig(void);
 void init8812(void);
 void startPow(void);
 u16 GetIBus();

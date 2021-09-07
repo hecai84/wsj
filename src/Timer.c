@@ -2,13 +2,13 @@
  * @Description: 
  * @Author: hecai
  * @Date: 2021-06-07 17:57:47
- * @LastEditTime: 2021-06-12 15:57:13
+ * @LastEditTime: 2021-09-07 10:10:26
  * @FilePath: \wsj\src\Timer.c
  */
 #include "Tools.h"
 #include "Timer.h"
 
-#define TIMER0_VECTOR  1    //TIMER0 Interrupt Vevtor
+
 #define d_T0MOD        0x01 //TMOD[3:0] TIMER0 Mode setting
 #define d_T1MOD        0x00 //TMOD[7:4] TIMER1 Mode setting
 #define ET2            0x00 //TIMER2 overflow Interrupt Enable (Default 0 Disable)
@@ -16,7 +16,7 @@
 #define ET0            0x01 //TIMER0 overflow Interrupt Enable (Default 0 Disable)
 
 #define d_MODEVALUE_T0      65536     //MODE1 16bit 65536
-#define d_RELOADVALUE_T0    1313      //User Define Reload Value
+#define d_RELOADVALUE_T0    700      //User Define Reload Value
 
 unsigned long sysTick=0;
 

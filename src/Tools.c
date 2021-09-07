@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-16 23:27:08
- * @LastEditTime: 2021-05-01 00:15:42
+ * @LastEditTime: 2021-09-06 21:17:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\Tools.c
+ * @FilePath: \wsj\src\Tools.c
  */
 #include "Tools.h"
 #include "Timer.h"
@@ -41,7 +41,7 @@ void Delay_ms(u16 n)
     u16 i, j;
     for (i = 0; i < n; i++)
     {
-        for (j = 0; j < 878; j++)
+        for (j = 0; j < 450; j++)
         {
             ;
         }
