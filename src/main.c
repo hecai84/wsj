@@ -3,8 +3,8 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-09-07 10:09:02
- * @FilePath: \wsj\src\main.c
+ * @LastEditTime: 2021-09-15 21:21:53
+ * @FilePath: \WSJ\src\main.c
  */
 #include "IIC.h"
 #include "EEPROM.h"
@@ -63,6 +63,7 @@ void checkPowIn()
                     stopPow();
                     init8812();
                 }
+                resume8812();
                 POWIN_CTRL = 1;
                 Delay_ms(100);
             }
@@ -70,6 +71,8 @@ void checkPowIn()
     }
     else
     {
+        if(isOtg==0)
+            pause8812();
         POWIN_CTRL = 0;
     }
 }

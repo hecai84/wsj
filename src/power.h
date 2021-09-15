@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:57
- * @LastEditTime: 2021-09-06 15:19:42
+ * @LastEditTime: 2021-09-15 21:08:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \wsj\src\power.h
+ * @FilePath: \WSJ\src\power.h
  */
 #ifndef __POWER_H__
 #define __POWER_H__
@@ -24,4 +24,6 @@ u8 WriteCmd(u8 addr,u8 dat);
 void VoltMin();
 void VoltAdd();
 void stopPow(void);
+void pause8812(void);
+void resume8812(void);
 #endif

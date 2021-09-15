@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-09-06 21:54:32
+ * @LastEditTime: 2021-09-15 21:14:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \wsj\src\power.c
+ * @FilePath: \WSJ\src\power.c
  */
 #include "power.h"
 #include "IIC.h"
@@ -38,6 +38,7 @@ void startPow(void)
     stableIBus=0;
     stableCount=0;
     M_CTRL=0;
+    PSTOP=0;
 
     SetVolt(tempVolt);
 
@@ -70,7 +71,6 @@ void startPow(void)
 
     isOtg=1;
 
-    //PSTOP=0;
     Delay_ms(30);  
     if(tempVolt>100)
     {
@@ -98,6 +98,7 @@ void stopPow(void)
     WriteCmd(0x09,0x07);
     isOtg=0;
     M_CTRL=0;
+    PSTOP=1;
     Delay_ms(100);  
 }
 void stop8812(void)
@@ -105,6 +106,17 @@ void stop8812(void)
     CE=1;
     PSTOP=1;
 }
+
+void pause8812(void)
+{
+    PSTOP=1;
+}
+
+void resume8812(void)
+{
+    PSTOP=0;
+}
+
 
 void loadConfig(void)
 {
@@ -143,7 +155,7 @@ void init8812(void)
     
     Delay_ms(100);  
     isOtg=0;
-    PSTOP=0;
+    //PSTOP=0;
 
     
     curVBat=GetBat();
