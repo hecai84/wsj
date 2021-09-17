@@ -1,11 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-09-15 21:14:09
+ * @LastEditTime: 2021-09-17 09:26:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \WSJ\src\power.c
+ * @FilePath: \wsj\src\power.c
  */
+#include <string.h>
 #include "power.h"
 #include "IIC.h"
 #include "EEPROM.h"
@@ -56,6 +57,7 @@ void startPow(void)
     //     Delay_10us(5);
     // }
     UpdateIBusArr();
+    memset(iBusArr,0,sizeof(u16)*IBUSARR_LEN);
     //emptyIBus=GetIBusAvg();
     emptyIBus=3;
 
