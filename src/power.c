@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-09-17 09:26:32
+ * @LastEditTime: 2021-09-18 20:13:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -41,8 +41,8 @@ void startPow(void)
     M_CTRL=0;
     PSTOP=0;
 
-    SetVolt(tempVolt);
 
+    SetVolt(tempVolt);
     WriteCmd(0x05,0xFF);
     WriteCmd(0x06,0xFF);
     WriteCmd(0x09,0x87);
@@ -50,16 +50,13 @@ void startPow(void)
     Delay_ms(30);
     isOtg=0;
     //获取空载电流
-    // for(i=0;i<IBUSARR_LEN;i++)
-    // {
-    //     //emptyIBus=GetIBusAvg();
-    //     UpdateIBusArr();
-    //     Delay_10us(5);
-    // }
-    UpdateIBusArr();
-    memset(iBusArr,0,sizeof(u16)*IBUSARR_LEN);
-    //emptyIBus=GetIBusAvg();
-    emptyIBus=3;
+    for(i=0;i<IBUSARR_LEN;i++)
+    {
+        //emptyIBus=GetIBusAvg();
+        UpdateIBusArr();
+        Delay_10us(5);
+    }
+    emptyIBus=GetIBusAvg();
 
     //设置是否强起
     if(curVolt<100 && forcePow==1)
