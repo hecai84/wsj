@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2021-09-03 19:33:05
+ * @LastEditTime: 2021-10-10 17:43:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.c
@@ -261,11 +261,17 @@ void Set_Column_Address(unsigned char add)
 void LcdPowerOff()
 {
     LCD_EN=1;
-    SDA=0;
-    SCL=0;
+    SDA=1;
+    SCL=1;
+
+    P1M1 = P1M1| 0x40;
+    P1M0 = P1M0| 0x40;
+    LCD_RES=1;
 }
 void LcdPowerOn()
 {
+    P1M1 = P1M1 & 0xBF;
+    P1M0 = P1M0 & 0xBF;    
     LCD_EN=0;
     LCD_RES=0;
     Delay_ms(50);
@@ -275,6 +281,8 @@ void LcdPowerOn()
 void Initial(void)
 {
     //Delay_ms(4000);
+    P0M1 = P0M1 | 0x30;
+    P0M0 = P0M0 | 0x30;
 
     write_i(0xae); //--turn off oled panel
 

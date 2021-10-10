@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-09-03 10:34:45
+ * @LastEditTime: 2021-10-10 17:39:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.c
@@ -61,7 +61,7 @@ void startPow(void)
     emptyIBus=GetIBusAvg();
     isOtg=1;
 
-    //PSTOP=0;
+    PSTOP=0;
     Delay_ms(30);  
     if(tempVolt>100)
     {
@@ -84,7 +84,7 @@ void startPow(void)
 }
 void stopPow(void)
 {
-    //PSTOP=1;    
+    PSTOP=1;    
     WriteCmd(0x06,0x3f);
     WriteCmd(0x09,0x07);
     isOtg=0;
@@ -102,6 +102,10 @@ void init8812(void)
     PSTOP=1;
     CE=0;
     P1M0=P1M0 | 0x80;
+
+    P1M1=P1M1 | 0x03;
+    P1M0=P1M0 | 0x03;
+
     M_CTRL=0;
     
     forcePow=Read_EEPROM_FORCEPOW();
@@ -127,7 +131,7 @@ void init8812(void)
    
     Delay_ms(100);  
     isOtg=0;
-    PSTOP=0;
+    PSTOP=1;
 
     curVBat=GetBat();
     Delay_ms(10); 
