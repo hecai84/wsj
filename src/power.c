@@ -1,11 +1,10 @@
 /*
- * @Author: your name
- * @Date: 2021-04-18 09:32:50
- * @LastEditTime: 2021-10-10 17:39:43
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 
+ * @Author: hecai
+ * @Date: 2021-06-07 17:57:46
  * @FilePath: \wsj\src\power.c
  */
+
 #include "power.h"
 #include "IIC.h"
 #include "EEPROM.h"
@@ -97,26 +96,31 @@ void stop8812(void)
     PSTOP=1;
 }
 
+void loadConfig(void)
+{
+    forcePow=Read_EEPROM_FORCEPOW();
+    if(forcePow!=1)
+        forcePow=0;
+    curVolt=Read_EEPROM_VOLT();
+    Delay_ms(100);  
+    if(curVolt>=30 && curVolt<=150)
+        SetVolt(curVolt);
+    else
+        SetVolt(50);
+}
+
+
 void init8812(void)
 {
     PSTOP=1;
     CE=0;
     P1M0=P1M0 | 0x80;
 
+    //sda scl开漏输出
     P1M1=P1M1 | 0x03;
     P1M0=P1M0 | 0x03;
 
     M_CTRL=0;
-    
-    forcePow=Read_EEPROM_FORCEPOW();
-    if(forcePow!=1)
-        forcePow=0;
-    curVolt=Read_EEPROM_VOLT(); 
-    Delay_ms(100);  
-    if(curVolt>=30 && curVolt<=150)
-        SetVolt(curVolt);
-    else
-        SetVolt(50);
 
     WriteCmd(0x05,0x95);
     WriteCmd(0x06,0x26);

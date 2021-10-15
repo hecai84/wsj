@@ -2,7 +2,7 @@
  * @Description: 
  * @Author: hecai
  * @Date: 2021-06-07 17:57:47
- * @LastEditTime: 2021-07-23 19:26:01
+ * @LastEditTime: 2021-10-12 10:32:39
  * @FilePath: \wsj\src\Timer.c
  */
 #include "Tools.h"
@@ -16,7 +16,7 @@
 #define ET0            0x01 //TIMER0 overflow Interrupt Enable (Default 0 Disable)
 
 #define d_MODEVALUE_T0      65536     //MODE1 16bit 65536
-#define d_RELOADVALUE_T0    1313      //User Define Reload Value
+#define d_RELOADVALUE_T0    700      //User Define Reload Value
 
 unsigned long sysTick=0;
 

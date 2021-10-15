@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-09-03 11:33:25
+ * @LastEditTime: 2021-10-12 11:30:54
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -193,6 +193,7 @@ void init()
     POWIN_CTRL = 0;
 
     //8812初始化
+    loadConfig();
     init8812();
     DisplayChar_b(curVolt);
 
@@ -572,13 +573,7 @@ void checkSleep()
                 DisplayOff();
             }
         }
-        if (isDisplay == 0)
-        {
-            if (curTime - clickTime > 10800000)
-            {
-                SystemStop();
-            }
-        }
+        
     }
 }
 
