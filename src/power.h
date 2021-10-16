@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:57
- * @LastEditTime: 2021-10-12 11:26:44
+ * @LastEditTime: 2021-10-16 12:41:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.h
@@ -24,4 +24,6 @@ u8 WriteCmd(u8 addr,u8 dat);
 void VoltMin();
 void VoltAdd();
 void stopPow(void);
+void pause8812(void);
+void resume8812(void);
 #endif

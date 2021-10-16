@@ -49,6 +49,8 @@ void startPow(void)
     WriteCmd(0x06,0xFF);
     WriteCmd(0x09,0x87);
     
+    
+    PSTOP=0;
     Delay_ms(30);
     isOtg=0;
     for(i=0;i<IBUSARR_LEN;i++)
@@ -60,8 +62,6 @@ void startPow(void)
     emptyIBus=GetIBusAvg();
     isOtg=1;
 
-    PSTOP=0;
-    Delay_ms(30);  
     if(tempVolt>100)
     {
         for(j=0;j<15;j++)
@@ -84,8 +84,18 @@ void startPow(void)
 void stopPow(void)
 {
     PSTOP=1;    
-    WriteCmd(0x06,0x3f);
+    //关闭后重写8812寄存器
+    WriteCmd(0x05,0x95);
+    WriteCmd(0x06,0x26);
+    WriteCmd(0x07,0x2C);
+    WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x07);
+    WriteCmd(0x0a,0x81);
+    WriteCmd(0x0b,0x01);
+    WriteCmd(0x0c,0x22);
+    WriteCmd(0x00,0x0B);    
+    WriteCmd(0x02,0x00);
+
     isOtg=0;
     M_CTRL=0;
     Delay_ms(100);  
@@ -94,6 +104,26 @@ void stop8812(void)
 {
     CE=1;
     PSTOP=1;
+}
+
+void pause8812(void)
+{
+    PSTOP=1;
+}
+
+void resume8812(void)
+{
+    WriteCmd(0x05,0x95);
+    WriteCmd(0x06,0x26);
+    WriteCmd(0x07,0x2C);
+    WriteCmd(0x08,0x3B);
+    WriteCmd(0x09,0x07);
+    WriteCmd(0x0a,0x81);
+    WriteCmd(0x0b,0x01);
+    WriteCmd(0x0c,0x22);
+    WriteCmd(0x00,0x0B);    
+    WriteCmd(0x02,0x00);
+    PSTOP=0;
 }
 
 void loadConfig(void)
@@ -108,6 +138,7 @@ void loadConfig(void)
     else
         SetVolt(50);
 }
+
 
 
 void init8812(void)

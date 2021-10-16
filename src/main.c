@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-10-12 11:30:54
+ * @LastEditTime: 2021-10-16 13:15:07
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -32,7 +32,7 @@
 #define POW_INT P0_2
 #define POWIN_CTRL P0_3
 
-u8 isRunning = 1, curBtPow = 1, curBtMin = 1, curBtAdd = 1;
+u8 curBtPow = 1, curBtMin = 1, curBtAdd = 1;
 u32 chargeSleepTime = 0;
 u32 clickTime;
 u32 refreshTime;
@@ -56,35 +56,32 @@ void waitClickUp();
  */
 void checkPowIn()
 {
+    u8 i;
     if (POW_INT == 0)
     {
-        Delay_ms(5);
-        if (POW_INT == 0)
+        for(i=0;i<20;i++)
         {
-            Delay_ms(5);
-            if (POW_INT == 0)
-            {
-                if (isRunning == 0)
-                {
-                    WDT_initialize();
-                    init8812();
-                    stopPow();
-                    isRunning = 1;
-                    //设置充电休眠时间
-                    chargeSleepTime = GetSysTick();
-                }
-                else if (isOtg == 1)
-                {
-                    stopPow();
-                    init8812();
-                }
-                POWIN_CTRL = 1;
-                Delay_ms(100);
-            }
+            if(POW_INT==1)
+                return;
+            Delay_10us(1);
         }
+
+        if (isOtg == 1)
+        {
+            stopPow();
+            init8812();
+        }
+        if(POWIN_CTRL==0)
+        {
+            POWIN_CTRL = 1;
+            resume8812();
+        }
+        Delay_ms(100);
     }
     else
     {
+        if(isOtg==0)
+            pause8812();
         POWIN_CTRL = 0;
     }
 }
@@ -107,57 +104,23 @@ void checkPowIn()
  */
 void SystemStop()
 {
+    //如果当前有插入电源则不休眠
+    if (POW_INT == 0)
+        return;
+
     stopPow();
     stop8812();
-    //闪屏提醒
-    DisplayOn();
-    Delay_ms(250);
-    clear();
-    Delay_ms(300);
-    refreshDisplay();
-    Delay_ms(300);
-    clear();
-    Delay_ms(300);
-    refreshDisplay();
-    Delay_ms(300);
-    clear();
-    Delay_ms(300);
-    refreshDisplay();
-    Delay_ms(300);
-    clear();
-    DisplayOff();
-    Delay_ms(500);
     waitClickUp();
     WDT_Disable();
-    curBtPow = 1;
-    isRunning = 0;
     //mcu休眠
     PCON = 0x02;
-}
 
-/**
- * @description: 系统恢复
- * @param {*}
- * @return {*}
- */
-void SystemResume()
-{
+    //恢复
+    curBtPow = 0;
     WDT_initialize();
     init8812();
     stopPow();
-    DisplayOn();
-    refreshTime = 0;
-    refreshDisplay();
-    Delay_ms(10);
-    refreshTime = 0;
-    refreshDisplay();
-    Delay_ms(10);
-    refreshTime = 0;
-    refreshDisplay();
-    waitClickUp();
-    isRunning = 1;
-    chargeSleepTime = 0;
-    curBtPow = 1;
+    clickTime=GetSysTick();
 }
 
 void init()
@@ -188,7 +151,7 @@ void init()
 
     EA = 1; //中断开启
 
-    //0.3,0.4,0.5上拉
+    //0.3,0.4,0.5推挽
     P0M0 = P0M0 | 0x38;
     POWIN_CTRL = 0;
 
@@ -365,64 +328,68 @@ void doubleAddMin()
 
 void powClickLong()
 {
-    u32 diffTime;
-
-    if (isRunning == 0)
+    u8 doSleep=0;
+    u32 difftime;
+    if (isDisplay)
     {
-        SystemResume();
+        stopPow();
+        init8812();
+        DisplayOff();
+
+        while(BT_POW == 0)
+        {
+            difftime=GetSysTick()-clickTime;
+            if(difftime>3000)
+            {
+                //闪屏提醒
+                DisplayOn();
+                Delay_ms(250);
+                clear();
+                Delay_ms(300);
+                refreshDisplay();
+                Delay_ms(300);
+                clear();
+                Delay_ms(300);
+                refreshDisplay();
+                Delay_ms(300);
+                clear();
+                Delay_ms(300);
+                refreshDisplay();
+                Delay_ms(300);
+                clear();
+                DisplayOff();
+                Delay_ms(500);
+                waitClickUp();
+            }
+            WDT_CountClear();
+        }
+
+        tempDisplay = 0;
+        Write_EEPROM(forcePow, curVolt);
+        doSleep=1;
     }
     else
     {
-        if (isDisplay)
-        {
-            stopPow();
-            init8812();
-            DisplayOff();
-            tempDisplay = 0;
-            Write_EEPROM(forcePow, curVolt);
-        }
-        else
-        {
-            stopPow();
-            init8812();
-            DisplayOn();
-            refreshTime = 0;
-            refreshDisplay();
-            refreshTime = 0;
-            refreshDisplay();
-            refreshTime = 0;
-            refreshDisplay();
-            refreshTime = 0;
-            refreshDisplay();
-            refreshTime = 0;
-            refreshDisplay();
-        }
-        //没有充电的时候才处理休眠
-        if (POW_INT == 1)
-        {
-            Delay_ms(5);
-            if (POW_INT == 1)
-            {
-                while (BT_POW == 0)
-                {
-                    diffTime = GetSysTick() - clickTime;
-                    if (diffTime > 3000)
-                    {
-                        if (isRunning == 1)
-                        {
-                            SystemStop();
-                            return;
-                        }
-                    }
-
-                    WDT_CountClear();
-                }
-            }
-        }
+        init8812();
+        DisplayOn();
+        stopPow();
+        refreshTime = 0;
+        refreshDisplay();
+        refreshTime = 0;
+        refreshDisplay();
+        refreshTime = 0;
+        refreshDisplay();
+        refreshTime = 0;
+        refreshDisplay();
+        refreshTime = 0;
+        refreshDisplay();
+        
+        curBtPow=1;
     }
 
-    curBtPow = 1;
     waitClickUp();
+    if(doSleep)
+        SystemStop();
 }
 
 void minClick()
@@ -484,7 +451,7 @@ void procClick()
         else
         {
             diffTime = GetSysTick() - clickTime;
-            if (diffTime > 1000)
+            if(diffTime > 800  || !isDisplay && !tempDisplay && diffTime > 200 )
             {
                 powClickLong();
             }
@@ -541,39 +508,24 @@ void procClick()
 void checkSleep()
 {
     u32 curTime = GetSysTick();
-    if (isRunning == 0)
+    //有按键的时候不检测休眠
+    if(BT_ADD==0 || BT_MIN==0 || BT_POW==0)
+        return;
+    if (!isDisplay && !tempDisplay)
     {
-        if (BT_POW == 1 && POW_INT == 1)
-        {
-            WDT_Disable();
-            PCON = 0x02;
-        }
-    }
-    else if (chargeSleepTime != 0)
-    {
-        //充电休眠时间不等于0的情况下,在充电则更新最后充电时间
-        if (POW_INT == 0)
-            chargeSleepTime = GetSysTick();
-        else if (curTime - chargeSleepTime > 60000)
-        {
-            //重新休眠
-            stop8812();
-            WDT_Disable();
-            PCON = 0x02;
-            isRunning = 0;
-        }
+        //如果当前没有显示,则深度休眠
+        SystemStop();
     }
     else
     {
-
-        if (isOtg == 0 && isDisplay)
+        if (isOtg == 0)
         {
             if (curTime - clickTime > 1800000)
             {
                 DisplayOff();
+                SystemStop();
             }
         }
-        
     }
 }
 
