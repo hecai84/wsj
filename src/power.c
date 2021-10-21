@@ -12,7 +12,7 @@
 #define PSTOP P0_7
 #define M_CTRL P1_7
 #define IBUSARR_LEN 60
-#define UPDATE_BAT_COUNT 100
+#define UPDATE_BAT_COUNT 50
 u8 idata I2cRecArr[10]={0};
 u16 idata iBusArr[IBUSARR_LEN]={0};
 u8 curVBat;
@@ -288,13 +288,13 @@ u8 GetBat()
         {
             v=value1;
             v=(v*4+(value2>>8)+1)*10;
-            if(v<6800)
+            if(v<6600)
                 return 0;
             else if(v<7200)
                 return 1;
-            else if(v<7400)
+            else if(v<7600)
                 return 2;
-            else if(v<7800)
+            else if(v<7900)
                 return 3;
             else
                 return 4;
