@@ -288,13 +288,13 @@ u8 GetBat()
         {
             v=value1;
             v=(v*4+(value2>>8)+1)*10;
-            if(v<6600)
+            if(v<3300)
                 return 0;
-            else if(v<7200)
+            else if(v<3600)
                 return 1;
-            else if(v<7600)
+            else if(v<3800)
                 return 2;
-            else if(v<7900)
+            else if(v<3950)
                 return 3;
             else
                 return 4;
