@@ -33,17 +33,16 @@ u8 GetBat();
 void startPow(void)
 {
     u16 i,j;
-    u8 tempVolt=curVolt;
     stableIBus=0;
     stableCount=0;
     M_CTRL=0;
-    if(curVolt<100 && forcePow==1)
-    {
-        SetVolt(100);
-    }else
-    {
-        SetVolt(tempVolt);
-    }
+    // if(curVolt<100 && forcePow==1)
+    // {
+    //     SetVolt(100);
+    // }else
+    // {
+    //     SetVolt(tempVolt);
+    // }
     
     WriteCmd(0x05,0xFF);
     WriteCmd(0x06,0xFF);
@@ -51,35 +50,12 @@ void startPow(void)
     
     
     PSTOP=0;
-    Delay_ms(30);
-    isOtg=0;
-    for(i=0;i<IBUSARR_LEN;i++)
-    {
-        //emptyIBus=GetIBusAvg();
-        UpdateIBusArr();
-        Delay_10us(10);
-    }
-    emptyIBus=GetIBusAvg();
-    isOtg=1;
-
-    if(tempVolt>100)
-    {
-        for(j=0;j<15;j++)
-        {
-            for(i=0;i<100;i++)
-            {
-                M_CTRL=0;
-                Delay_10us(15-j);    
-                M_CTRL=1;
-                Delay_10us(j);  
-            }
-        }
-    }
-     
+    isOtg=1;     
 
     M_CTRL=1;
     Delay_ms(100);
-    SetVolt(tempVolt);
+
+    SetVolt(curVolt);
 }
 void stopPow(void)
 {
@@ -133,10 +109,10 @@ void loadConfig(void)
         forcePow=0;
     curVolt=Read_EEPROM_VOLT();
     Delay_ms(100);  
-    if(curVolt>=30 && curVolt<=150)
-        SetVolt(curVolt);
-    else
-        SetVolt(50);
+    if(curVolt<1 || curVolt>10)
+        curVolt=5;
+    
+    SetVolt(curVolt);    
 }
 
 
@@ -181,7 +157,7 @@ void init8812(void)
 
 void VoltAdd()
 {
-    if(curVolt<150)
+    if(curVolt<10)
     {
         curVolt++;
         SetVolt(curVolt);
@@ -189,7 +165,7 @@ void VoltAdd()
 }
 void VoltMin()
 {
-    if(curVolt>30)
+    if(curVolt>1)
     {
         curVolt--;
         SetVolt(curVolt);
@@ -224,7 +200,7 @@ void SetVolt(u8 v)
 {
     u8 set1,set2=0;
     u16 tempv;
-    curVolt=v;
+    v=v*5+70;
     //setIBusLim(v);
     if(v>102)
     {

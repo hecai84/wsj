@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:35
- * @LastEditTime: 2021-07-21 18:28:58
+ * @LastEditTime: 2022-01-06 19:54:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.h
@@ -12,12 +12,11 @@
 
 void Initial(void);
 void clear(void);
-void DisplayChar_b(u8 num);
+void DisplayRotation(u8 forward);
 void DisplayBat(u8 bat);
-void DisplayChar_s(u16 num);
+void DisplayNum(u8 num);
 void DisplayOn();
 void DisplayOff();
-void DisplayShan_s(u8 visable);
 void LcdPowerOff();
 void LcdPowerOn();
 #endif

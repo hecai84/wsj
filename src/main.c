@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-10-16 13:15:07
+ * @LastEditTime: 2022-01-06 21:58:02
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -27,8 +27,8 @@
 #define d_KBIIE 0x01 //KBI Interrupt Enable bit
 
 #define BT_POW P0_1
-#define BT_ADD P3_1
-#define BT_MIN P0_0
+#define BT_ADD P0_0
+#define BT_MIN P3_1
 #define POW_INT P0_2
 #define POWIN_CTRL P0_3
 
@@ -158,7 +158,6 @@ void init()
     //8812初始化
     loadConfig();
     init8812();
-    DisplayChar_b(curVolt);
 
     //屏幕初始化
     Delay_ms(2000);
@@ -253,6 +252,7 @@ void refreshDisplay()
         }
         else
         {
+            DisplayNum(curVolt);
             if (POW_INT == 0)
             {
                 if (curIBus >= 20 && isOtg == 0)
@@ -276,18 +276,8 @@ void refreshDisplay()
             {
                 DisplayBat(curVBat);
             }
-            //放电才显示电流
-            if (isOtg == 1)
-            {
-                DisplayChar_s(curIBus);
-            }
-            else
-            {
-                DisplayChar_s(0);
-            }
 
-            DisplayChar_b(curVolt);
-            DisplayShan_s(forcePow);
+
         }
     }
 }
@@ -321,8 +311,6 @@ void powClick()
  */
 void doubleAddMin()
 {
-    forcePow = ~forcePow & 1;
-    DisplayShan_s(forcePow);
     waitClickUp();
 }
 
@@ -395,14 +383,14 @@ void powClickLong()
 void minClick()
 {
     VoltMin();
-    DisplayChar_b(curVolt);
+    DisplayNum(curVolt);
 }
 void minClickLong()
 {
     while (BT_MIN == 0)
     {
         VoltMin();
-        DisplayChar_b(curVolt);
+        DisplayNum(curVolt);
         if (BT_ADD == 0)
         {
             doubleAddMin();
@@ -415,14 +403,14 @@ void minClickLong()
 void addClick()
 {
     VoltAdd();
-    DisplayChar_b(curVolt);
+    DisplayNum(curVolt);
 }
 void addClickLong()
 {
     while (BT_ADD == 0)
     {
         VoltAdd();
-        DisplayChar_b(curVolt);
+        DisplayNum(curVolt);
         if (BT_MIN == 0)
         {
             doubleAddMin();
