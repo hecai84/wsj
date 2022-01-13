@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-01-06 21:58:02
+ * @LastEditTime: 2022-01-12 21:34:53
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -27,8 +27,8 @@
 #define d_KBIIE 0x01 //KBI Interrupt Enable bit
 
 #define BT_POW P0_1
-#define BT_ADD P0_0
-#define BT_MIN P3_1
+#define BT_ADD P3_1
+#define BT_MIN P0_0
 #define POW_INT P0_2
 #define POWIN_CTRL P0_3
 

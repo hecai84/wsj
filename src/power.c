@@ -32,7 +32,6 @@ u8 GetBat();
 
 void startPow(void)
 {
-    u16 i,j;
     stableIBus=0;
     stableCount=0;
     M_CTRL=0;
@@ -157,7 +156,7 @@ void init8812(void)
 
 void VoltAdd()
 {
-    if(curVolt<10)
+    if(curVolt<15)
     {
         curVolt++;
         SetVolt(curVolt);
@@ -200,7 +199,7 @@ void SetVolt(u8 v)
 {
     u8 set1,set2=0;
     u16 tempv;
-    v=v*5+70;
+    v=v*5+45;
     //setIBusLim(v);
     if(v>102)
     {
