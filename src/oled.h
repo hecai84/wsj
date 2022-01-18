@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:35
- * @LastEditTime: 2022-01-06 19:54:20
+ * @LastEditTime: 2022-01-15 16:45:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.h
@@ -19,4 +19,5 @@ void DisplayOn();
 void DisplayOff();
 void LcdPowerOff();
 void LcdPowerOn();
+void DisplayPlay(u8 state);
 #endif

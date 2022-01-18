@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2022-01-12 22:52:06
+ * @LastEditTime: 2022-01-15 16:48:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.c
@@ -105,6 +105,13 @@ u8 code picDot[16] = {
 u8 code picV[16] = {
     0x00, 0x00, 0x0C, 0x0C, 0x0C, 0x1E, 0x1E, 0x1E, 0x33, 0x33, 0x33, 0x33, 0x61, 0x61, 0x61, 0x00, /*"V",0*/
 
+};
+
+u8 code picPause[8]={
+0x66,0x66,0x66,0x66,0x66,0x66,0x66,0x66,/*"未命名文件",0*/
+};
+u8 code picPlay[8]={  
+0x02,0x0E,0x3E,0x7E,0x7E,0x3E,0x0E,0x02,/*"未命名文件",0*/
 };
 
 u8 code picNum[10][64] = {
@@ -346,6 +353,22 @@ void clear(void)
         // Stop();
     }
     return;
+}
+
+
+void DisplayPlay(u8 state)
+{
+    u8 i;
+    Set_Page_Address(0);
+        Set_Column_Address(52);
+
+    for (i = 0; i < 8; i++)
+    {
+        if(state)
+            write_d(picPlay[i]);
+        else
+            write_d(picPause[i]);
+    }
 }
 
 static u8 twinkBat = 0;

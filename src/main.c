@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-01-12 21:34:53
+ * @LastEditTime: 2022-01-18 19:48:04
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -75,6 +75,9 @@ void checkPowIn()
         {
             POWIN_CTRL = 1;
             resume8812();
+        }else
+        {
+            
         }
         Delay_ms(100);
     }
@@ -121,6 +124,7 @@ void SystemStop()
     init8812();
     stopPow();
     clickTime=GetSysTick();
+    DisplayPlay(0);
 }
 
 void init()
@@ -223,7 +227,8 @@ void refreshDisplay()
                     DisplayOn();
                     isDisplay = 0;
                     tempDisplay = 1;
-                    init8812();
+                    resume8812();
+                    //init8812();
                 }
                 if (curIBus >= 20)
                 {
@@ -295,13 +300,17 @@ void powClick()
     if (isOtg == 1)
     {
         stopPow();
+        DisplayPlay(0);
         POWIN_CTRL = 0;
     }
     else
     {
         //当前处于显示状态,且没有插入充电器
         if (isDisplay == 1 && POW_INT == 1)
+        {
             startPow();
+            DisplayPlay(1);
+        }
     }
 }
 /**
@@ -358,9 +367,9 @@ void powClickLong()
     }
     else
     {
-        init8812();
         DisplayOn();
         stopPow();
+        resume8812();
         refreshTime = 0;
         refreshDisplay();
         refreshTime = 0;
@@ -524,6 +533,7 @@ void main()
 
     refreshTime = GetSysTick();
     refreshIBusTime = GetSysTick();
+    DisplayPlay(0);
     while (1)
     {
         checkPowIn();
