@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-10-16 13:15:07
+ * @LastEditTime: 2022-01-18 20:05:48
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -224,7 +224,7 @@ void refreshDisplay()
                     DisplayOn();
                     isDisplay = 0;
                     tempDisplay = 1;
-                    init8812();
+                    resume8812();
                 }
                 if (curIBus >= 20)
                 {
@@ -370,9 +370,9 @@ void powClickLong()
     }
     else
     {
-        init8812();
         DisplayOn();
         stopPow();
+        resume8812();
         refreshTime = 0;
         refreshDisplay();
         refreshTime = 0;
