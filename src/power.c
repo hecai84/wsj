@@ -171,7 +171,7 @@ void init8812(void)
 
 void VoltAdd()
 {
-    if (curVolt < 15)
+    if (curVolt < 21)
     {
         curVolt++;
         SetVolt(curVolt);
@@ -212,23 +212,21 @@ void VoltMin()
 void SetVolt(u8 v)
 {
     u8 set1, set2 = 0;
-    u16 tempv;
+    //u16 tempv;
     v = v * 5 + 45;
     // setIBusLim(v);
     if (v > 102)
     {
         // FB_CTRL=1;
         WriteCmd(0x08, 0x3A);
-        tempv = (v - 102) * 9 / 10;
-        set1 = tempv + 102; //(1+100/12)*8*10
+        //tempv = (v - 102) * 9 / 10;
+        set1 = v; //(1+100/12)*8*10
         set2 = 0;           //(1+100/12)*2*10
     }
     else
     {
         // FB_CTRL=0;
         WriteCmd(0x08, 0x3B);
-        if (v < 35)
-            v = 17 + v / 2;
         set1 = v * 5 / 2; //(1+100/24)*8*10
         set2 = 0;         //(1+100/24)*2*10
     }
