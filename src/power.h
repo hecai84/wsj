@@ -26,4 +26,5 @@ void VoltAdd();
 void stopPow(void);
 void pause8812(void);
 void resume8812(void);
+void roPow(void);
 #endif

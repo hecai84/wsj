@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2022-01-15 16:48:32
+ * @LastEditTime: 2022-01-19 20:22:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.c
@@ -110,8 +110,12 @@ u8 code picV[16] = {
 u8 code picPause[8]={
 0x66,0x66,0x66,0x66,0x66,0x66,0x66,0x66,/*"未命名文件",0*/
 };
-u8 code picPlay[8]={  
-0x02,0x0E,0x3E,0x7E,0x7E,0x3E,0x0E,0x02,/*"未命名文件",0*/
+
+u8 code picF[8]={
+   0x81,0xC1,0xE1,0xF1,0xC1,0xC1,0xFF,0xFF,/*"未命名文件",0*/
+};
+u8 code picR[8]={
+0x81,0x83,0x87,0x8F,0x83,0x83,0xFF,0xFF,/*"未命名文件",0*/
 };
 
 u8 code picNum[10][64] = {
@@ -355,7 +359,11 @@ void clear(void)
     return;
 }
 
-
+/**
+ * @description: 
+ * @param {u8} state 0暂停 1正转  2反转
+ * @return {*}
+ */
 void DisplayPlay(u8 state)
 {
     u8 i;
@@ -364,8 +372,10 @@ void DisplayPlay(u8 state)
 
     for (i = 0; i < 8; i++)
     {
-        if(state)
-            write_d(picPlay[i]);
+        if(state==1)
+            write_d(picF[i]);
+        else if (state==2)
+            write_d(picR[i]);
         else
             write_d(picPause[i]);
     }

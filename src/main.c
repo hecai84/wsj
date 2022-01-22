@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-01-18 19:48:04
+ * @LastEditTime: 2022-01-19 20:55:13
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -42,6 +42,7 @@ extern u8 isOtg;
 extern u8 isDisplay;
 u8 tempDisplay;
 extern u8 forcePow;
+extern u8 isRo;
 
 //函数定义--------------------------------
 void refreshDisplay();
@@ -320,6 +321,9 @@ void powClick()
  */
 void doubleAddMin()
 {
+    isRo=!isRo;
+    DisplayPlay(1+isRo);
+    roPow();
     waitClickUp();
 }
 
