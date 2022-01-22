@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-01-18 19:48:04
+ * @LastEditTime: 2022-01-22 18:29:05
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -380,6 +380,7 @@ void powClickLong()
         refreshDisplay();
         refreshTime = 0;
         refreshDisplay();
+        DisplayPlay(0);
         
         curBtPow=1;
     }

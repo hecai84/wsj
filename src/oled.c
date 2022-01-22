@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-29 21:47:45
- * @LastEditTime: 2022-01-15 16:48:32
+ * @LastEditTime: 2022-01-22 18:28:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\oled.c
@@ -360,7 +360,7 @@ void DisplayPlay(u8 state)
 {
     u8 i;
     Set_Page_Address(0);
-        Set_Column_Address(52);
+    Set_Column_Address(52);
 
     for (i = 0; i < 8; i++)
     {
