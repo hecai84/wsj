@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-01-19 20:55:13
+ * @LastEditTime: 2022-01-22 18:37:40
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -34,9 +34,10 @@
 
 u8 curBtPow = 1, curBtMin = 1, curBtAdd = 1;
 u32 chargeSleepTime = 0;
-u32 clickTime;
-u32 refreshTime;
-u32 refreshIBusTime;
+u32 clickTime=0;
+u32 refreshTime=0;
+u32 refreshIBusTime=0;
+u32 showRoTime=0;
 extern u8 curVolt;
 extern u8 isOtg;
 extern u8 isDisplay;
@@ -282,7 +283,10 @@ void refreshDisplay()
             {
                 DisplayBat(curVBat);
             }
-
+            if(!isOtg && GetSysTick()-showRoTime>2000)
+            {
+                DisplayPlay(0);
+            }
 
         }
     }
@@ -310,7 +314,7 @@ void powClick()
         if (isDisplay == 1 && POW_INT == 1)
         {
             startPow();
-            DisplayPlay(1);
+            DisplayPlay(1+isRo);
         }
     }
 }
@@ -325,6 +329,7 @@ void doubleAddMin()
     DisplayPlay(1+isRo);
     roPow();
     waitClickUp();
+    showRoTime=GetSysTick();
 }
 
 void powClickLong()
@@ -384,7 +389,7 @@ void powClickLong()
         refreshDisplay();
         refreshTime = 0;
         refreshDisplay();
-        
+        DisplayPlay(0);
         curBtPow=1;
     }
 
