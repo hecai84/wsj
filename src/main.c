@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-01-19 10:01:42
+ * @LastEditTime: 2023-08-12 11:54:45
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -42,6 +42,7 @@ extern u8 isOtg;
 extern u8 isDisplay;
 u8 tempDisplay;
 extern u8 forcePow;
+u8 deepSleep = 0;
 
 //函数定义--------------------------------
 void refreshDisplay();
@@ -359,6 +360,7 @@ void powClickLong()
                 clear();
                 DisplayOff();
                 Delay_ms(500);
+                deepSleep = 1;
                 waitClickUp();
             }
             WDT_CountClear();
@@ -370,6 +372,23 @@ void powClickLong()
     }
     else
     {
+        if (deepSleep)
+        {
+            while (BT_POW == 0)
+            {
+                difftime = GetSysTick() - clickTime;
+                if (difftime > 3000)
+                {
+                    deepSleep = 0;
+                    break;
+                }
+            }
+            if(deepSleep)
+            {
+                SystemStop();
+                return;
+            }
+        }
         DisplayOn();
         stopPow();
         resume8812();

@@ -13,6 +13,11 @@
 #define M_CTRL P1_7
 #define IBUSARR_LEN 60
 #define UPDATE_BAT_COUNT 50
+#define VBAT_SET 0x09
+//600ma
+#define IBAT_LIM_SET 0x26       
+
+
 u8 idata I2cRecArr[10]={0};
 u16 idata iBusArr[IBUSARR_LEN]={0};
 u8 curVBat;
@@ -86,14 +91,14 @@ void stopPow(void)
     PSTOP=1;    
     //关闭后重写8812寄存器
     WriteCmd(0x05,0x95);
-    WriteCmd(0x06,0x26);
+    WriteCmd(0x06,IBAT_LIM_SET);
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x07);
     WriteCmd(0x0a,0x81);
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
-    WriteCmd(0x00,0x09);    
+    WriteCmd(0x00,VBAT_SET);    
     WriteCmd(0x02,0x00);
 
     isOtg=0;
@@ -114,14 +119,14 @@ void pause8812(void)
 void resume8812(void)
 {
     WriteCmd(0x05,0x95);
-    WriteCmd(0x06,0x26);
+    WriteCmd(0x06,IBAT_LIM_SET);
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x07);
     WriteCmd(0x0a,0x81);
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
-    WriteCmd(0x00,0x09);    
+    WriteCmd(0x00,VBAT_SET);    
     WriteCmd(0x02,0x00);
     PSTOP=0;
 }
@@ -154,14 +159,14 @@ void init8812(void)
     M_CTRL=0;
 
     WriteCmd(0x05,0x95);
-    WriteCmd(0x06,0x26);
+    WriteCmd(0x06,IBAT_LIM_SET);
     WriteCmd(0x07,0x2C);
     WriteCmd(0x08,0x3B);
     WriteCmd(0x09,0x07);
     WriteCmd(0x0a,0x81);
     WriteCmd(0x0b,0x01);
     WriteCmd(0x0c,0x22);
-    WriteCmd(0x00,0x09);    
+    WriteCmd(0x00,VBAT_SET);    
     WriteCmd(0x02,0x00);
    
     Delay_ms(100);  
