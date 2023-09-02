@@ -13,9 +13,14 @@
 #define M_CTRL P1_7
 #define IBUSARR_LEN 60
 #define UPDATE_BAT_COUNT 50
-#define VBAT_SET 0x09
+//单节电池
+#define VBAT_SET 0x01
+//两节电池
+// #define VBAT_SET 0x09
 //600ma
-#define IBAT_LIM_SET 0x26       
+// #define IBAT_LIM_SET 0x26    
+//1A   
+#define IBAT_LIM_SET 0x3F       
 
 
 u8 idata I2cRecArr[10]={0};
