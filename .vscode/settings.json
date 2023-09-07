@@ -1,8 +1,10 @@
 {
     "files.associations": {
+        "*.H": "cpp",
         "tools.h": "c",
         "ob38r08a1.h": "c",
-        "iic.h": "c"
+        "iic.h": "c",
+        "eeprom.h": "c"
     }
     
 }

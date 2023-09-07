@@ -15,12 +15,16 @@
 #define UPDATE_BAT_COUNT 50
 //单节电池
 #define VBAT_SET 0x01
+#define BATNUM 1
 //两节电池
 // #define VBAT_SET 0x09
+// #define BATNUM 2
 //600ma
 // #define IBAT_LIM_SET 0x26    
 //1A   
-#define IBAT_LIM_SET 0x3F       
+#define IBAT_LIM_SET 0x3F      
+
+
 
 
 u8 idata I2cRecArr[10]={0};
@@ -297,14 +301,14 @@ u8 GetBat()
         if(ReadCmd(0x10,&value2))
         {
             v=value1;
-            v=(v*4+(value2>>8)+1)*10;
-            if(v<6600)
+            v=(v*4+(value2>>8)+1)*10/BATNUM;
+            if(v<3300)
                 return 0;
-            else if(v<7200)
+            else if(v<3600)
                 return 1;
-            else if(v<7600)
+            else if(v<3800)
                 return 2;
-            else if(v<7900)
+            else if(v<3950)
                 return 3;
             else
                 return 4;

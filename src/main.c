@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2023-08-12 11:54:45
+ * @LastEditTime: 2023-09-06 18:57:13
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -227,7 +227,7 @@ void refreshDisplay()
                     tempDisplay = 1;
                     resume8812();
                 }
-                if (curIBus >= 20)
+                if (curIBus >= 20 || curVBat<4)
                 {
                     DisplayBat(255);
                     curVBat = GetBatAvg(1);
@@ -256,7 +256,7 @@ void refreshDisplay()
         {
             if (POW_INT == 0)
             {
-                if (curIBus >= 20 && isOtg == 0)
+                if (curIBus >= 20 || curVBat<4)
                 {
                     DisplayBat(255);
                     curVBat = GetBatAvg(1);
