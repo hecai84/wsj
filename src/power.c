@@ -13,19 +13,19 @@
 #define M_CTRL P1_7
 #define IBUSARR_LEN 60
 #define UPDATE_BAT_COUNT 50
-//单节电池
+//配置单节或者双节电池
+#define BATNUM 2
+#if (BATNUM==1)
 #define VBAT_SET 0x01
-#define BATNUM 1
-//两节电池
-// #define VBAT_SET 0x09
-// #define BATNUM 2
+#else
+#define VBAT_SET 0x09
+#endif
+
 //600ma
 // #define IBAT_LIM_SET 0x26    
 //1A   
-#define IBAT_LIM_SET 0x3F      
-
-
-
+#define IBAT_LIM_SET 0x3F
+u16 curBatVolt;
 
 u8 idata I2cRecArr[10]={0};
 u16 idata iBusArr[IBUSARR_LEN]={0};
@@ -302,6 +302,7 @@ u8 GetBat()
         {
             v=value1;
             v=(v*4+(value2>>8)+1)*10/BATNUM;
+            curBatVolt = v;
             if(v<3300)
                 return 0;
             else if(v<3600)
