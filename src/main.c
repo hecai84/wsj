@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2023-12-22 10:51:19
+ * @LastEditTime: 2023-12-27 17:30:07
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -48,6 +48,7 @@ u8 deepSleep = 0;
 void refreshDisplay();
 void powClickLong();
 void waitClickUp();
+void checkLowBat();
 //---------------------------------------
 
 /**
@@ -290,6 +291,8 @@ void refreshDisplay()
             DisplayChar_b(curVolt);
             DisplayShan_s(forcePow);
         }
+        
+        checkLowBat();
     }
 }
 
@@ -557,7 +560,7 @@ void checkSleep()
 }
 void checkLowBat()
 {
-    if (BT_POW == 1 && POW_INT == 1 && curBatVolt < 3200)
+    if (BT_POW == 1 && POW_INT == 1 && curBatVolt < 3000)
     {
         DisplayOff();
         SystemStop();
@@ -575,7 +578,6 @@ void main()
     {
         checkPowIn();
         checkSleep();
-        checkLowBat();
         procClick();
         refreshIBus();
         refreshDisplay();

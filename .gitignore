@@ -7,7 +7,6 @@ wsj.hex
 *.M51
 *.plg
 *.uvopt
-*.uvproj
 wsj
 .vscode/keil-assistant.log
 .vscode/uv4.log.lock
@@ -16,3 +15,5 @@ wsj.uvgui.hecai
 .vscode/c_cpp_properties.json
 .vscode/workspace.code-workspace
 .history/
+wsj_b2_600
+wsj_b2_800
