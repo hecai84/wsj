@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-18 09:32:57
- * @LastEditTime: 2023-12-27 17:53:47
+ * @LastEditTime: 2024-01-06 17:26:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wsj\src\power.h
@@ -21,13 +21,18 @@ extern u16 curBatVolt;
 #elif defined(B2_600MA)
 #define BATNUM 2
 #define IBAT_LIM_SET 0x26
+#elif defined(B1_2000MA)
+#define BATNUM 1
+#define IBAT_LIM_SET 0x7E
+#elif defined(B1_1000MA)
+#define BATNUM 1
+#define IBAT_LIM_SET 0x3F
 #else
 #define BATNUM 1
 #define IBAT_LIM_SET 0x26
 #endif
 
 // 配置单节或者双节电池
-#define BATNUM 2
 #if (BATNUM == 1)
 #define VBAT_SET 0x01
 #else

@@ -3,7 +3,7 @@
  * @Author: hecai
  * @Date: 2021-05-12 10:42:58
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2023-12-27 17:30:07
+ * @LastEditTime: 2025-02-21 16:36:01
  * @FilePath: \wsj\src\main.c
  */
 #include "IIC.h"
@@ -110,6 +110,7 @@ void SystemStop()
     if (POW_INT == 0)
         return;
 
+    Write_EEPROM(forcePow, curVolt);
     stopPow();
     stop8812();
     waitClickUp();
@@ -560,7 +561,7 @@ void checkSleep()
 }
 void checkLowBat()
 {
-    if (BT_POW == 1 && POW_INT == 1 && curBatVolt < 3000)
+    if (BT_POW == 1 && POW_INT == 1 && curBatVolt < 3100)
     {
         DisplayOff();
         SystemStop();

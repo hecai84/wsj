@@ -40,18 +40,10 @@ void startPow(void)
     stableIBus=0;
     stableCount=0;
     M_CTRL=0;
-    if(curVolt<100 && forcePow==1)
-    {
-        SetVolt(100);
-    }else
-    {
-        SetVolt(tempVolt);
-    }
-    
+    SetVolt(tempVolt);
     WriteCmd(0x05,0xFF);
     WriteCmd(0x06,0xFF);
     WriteCmd(0x09,0x87);
-    
     
     PSTOP=0;
     Delay_ms(30);
@@ -63,6 +55,12 @@ void startPow(void)
         Delay_10us(10);
     }
     emptyIBus=GetIBusAvg();
+
+    //开强起动
+    if(curVolt<100 && forcePow==1)
+    {
+        SetVolt(100);
+    }
     isOtg=1;
 
     if(tempVolt>100)
@@ -79,7 +77,6 @@ void startPow(void)
         }
     }
      
-
     M_CTRL=1;
     Delay_ms(100);
     SetVolt(tempVolt);
